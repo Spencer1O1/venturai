@@ -4,17 +4,16 @@
   box-sizing: border-box;
 }
 
-/* Light mode (default) - VENTURAI design system */
+/* Light mode (default) – blue accent to match dark mode */
 :root {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  --background: #f0f4f8;
-  --foreground: #1a1f2e;
-  --primary: #00b4d8;
-  --primary-foreground: #ffffff;
-  --primary-light: #48cae4;
-  --accent: #00d4ff;
-  --link: #0096c7;
-  --muted: #64748b;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --primary: #00ACE6;
+  --primary-light: #33bdea;
+  --link: #00ACE6;
   color: var(--foreground);
   background: var(--background);
 }

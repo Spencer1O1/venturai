@@ -31,10 +31,10 @@ const config: Config = {
           border: "var(--card-border)",
         },
         risk: {
-          low: "#22c55e",
-          medium: "#eab308",
+          low: "#00D68F",
+          medium: "#FBBF24",
           high: "#f97316",
-          critical: "#ef4444",
+          critical: "#F87171",
         },
       },
       keyframes: {
