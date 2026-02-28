@@ -1,0 +1,10 @@
+{
+    "sortFirst": [
+        "name",
+        "version",
+        "private",
+        "type",
+        "exports",
+        "scripts"
+    ]
+}
