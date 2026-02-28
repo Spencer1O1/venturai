@@ -43,7 +43,6 @@ export const seed = mutation({
       ],
       createdAt: now,
     });
-
     const assetId = await ctx.db.insert("assets", {
       orgId,
       maintenanceGroupId,

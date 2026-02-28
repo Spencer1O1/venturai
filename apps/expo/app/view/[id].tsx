@@ -1,40 +1,155 @@
+import type { Id } from "@venturai/backend/dataModel";
+import { api } from "@venturai/backend";
+import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 /**
  * View history and most recent report (maintenance workers).
- * TODO: Wire to Convex - api.assessments.queries.listByAsset, workItems.listOpenByAsset
+ * Shows assessments with photos.
  */
+function AssessmentCard({
+  assessment,
+}: {
+  assessment: {
+    _id: Id<"assessments">;
+    intent: "routine" | "problem";
+    photoStorageIds: Id<"_storage">[];
+    notes?: string;
+    createdAt: number;
+  };
+}) {
+  const photoUrls = useQuery(
+    api.storage.getUrls,
+    assessment.photoStorageIds.length > 0
+      ? { storageIds: assessment.photoStorageIds }
+      : "skip",
+  );
+
+  const intentLabel = assessment.intent === "routine" ? "Inspection" : "Problem report";
+  const date = new Date(assessment.createdAt).toLocaleDateString();
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>{intentLabel}</Text>
+        <Text style={styles.cardDate}>{date}</Text>
+      </View>
+      {photoUrls && photoUrls.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.photos}
+        >
+          {photoUrls.map(
+            (url, i) =>
+              url && (
+                <Image
+                  key={`${i}-${url.slice(-24)}`}
+                  source={{ uri: url }}
+                  style={styles.photo}
+                  resizeMode="cover"
+                />
+              ),
+          )}
+        </ScrollView>
+      )}
+      {assessment.notes ? (
+        <Text style={styles.notes}>{assessment.notes}</Text>
+      ) : null}
+    </View>
+  );
+}
+
 export default function ViewHistoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const assetId = id as Id<"assets">;
+
+  const asset = useQuery(
+    api.assets.queries.getById,
+    id ? { assetId } : "skip",
+  );
+  const assessments = useQuery(
+    api.assessments.queries.listByAsset,
+    id ? { assetId } : "skip",
+  );
+
+  if (asset === undefined || assessments === undefined) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (asset === null) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Asset not found</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Asset History</Text>
-      <Text style={styles.assetId}>Asset ID: {id}</Text>
+      <Text style={styles.title}>{asset.name}</Text>
+      <Text style={styles.subtitle}>Assessment history</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Most recent report</Text>
-        <Text style={styles.placeholder}>
-          Will show latest assessment summary when Convex is wired
-        </Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Assessment history</Text>
-        <Text style={styles.placeholder}>
-          Timeline of inspections and problem reports
-        </Text>
-      </View>
+      {assessments.length === 0 ? (
+        <Text style={styles.empty}>No inspections or problem reports yet.</Text>
+      ) : (
+        assessments.map((a) => (
+          <AssessmentCard key={a._id} assessment={a} />
+        ))
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24 },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
-  assetId: { fontSize: 14, color: "#64748b", marginBottom: 24 },
-  section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
-  placeholder: { fontSize: 14, color: "#94a3b8" },
+  centered: { justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 20, fontWeight: "600", marginBottom: 4 },
+  subtitle: { fontSize: 14, color: "#64748b", marginBottom: 20 },
+  empty: { fontSize: 14, color: "#94a3b8" },
+  card: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#0f172a",
+  },
+  cardDate: { fontSize: 13, color: "#64748b" },
+  photos: { marginBottom: 12 },
+  photo: {
+    width: 120,
+    height: 120,
+    borderRadius: 8,
+    marginRight: 8,
+    backgroundColor: "#e2e8f0",
+  },
+  notes: {
+    fontSize: 14,
+    color: "#475569",
+    lineHeight: 20,
+  },
 });

@@ -1,6 +1,7 @@
 "use client";
 
-import { DataQueryPanel } from "@/components/DataQueryPanel";
+
+//import { DataQueryPanel } from "@/components/DataQueryPanel";
 import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
 import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { api } from "@venturai/backend";
@@ -129,9 +130,9 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className="order-1 shrink-0 lg:order-2">
+      {/* <div className="order-1 shrink-0 lg:order-2">
         <DataQueryPanel />
-      </div>
+      </div> */}
     </div>
   );
 }

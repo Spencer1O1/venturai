@@ -1,10 +1,11 @@
 import type { Id } from "@venturai/backend/dataModel";
 import { api } from "@venturai/backend";
-import { useQuery } from "convex/react";
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,19 +14,91 @@ import {
   View,
 } from "react-native";
 
+import { PhotoCaptureSlot } from "../../components/PhotoCaptureSlot";
+import { buildAssessmentSuccessMessage } from "../../lib/assessmentSuccessMessage";
+import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
+
 /**
  * Inspect flow - routine assessment.
  * Takes photos per template, answers additional questions, submits with notes.
- * TODO: Camera integration, storage upload, api.assessments.actions.createWithAI
  */
 export default function InspectionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const assetId = id as Id<"assets">;
+
   const [notes, setNotes] = useState("");
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string | number | boolean>>({});
+
   const template = useQuery(
     api.assets.queries.getTemplateForAsset,
-    id ? { assetId: id as Id<"assets"> } : "skip",
+    id ? { assetId } : "skip",
   );
-  const [answers, setAnswers] = useState<Record<string, string | number | boolean>>({});
+  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const createWithAI = useAction(api.assessments.actions.createWithAI);
+
+  const setPhoto = useCallback((index: number, uri: string | null) => {
+    setPhotoUris((prev) => {
+      const next = [...prev];
+      while (next.length <= index) next.push("");
+      next[index] = uri ?? "";
+      return next;
+    });
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (!id || !template) return;
+    const requiredCount = template.photoDescriptions.length;
+    const validUris = photoUris.slice(0, requiredCount).filter(Boolean);
+    if (validUris.length < requiredCount) {
+      Alert.alert(
+        "Photos required",
+        `Please take ${requiredCount} photo(s): ${template.photoDescriptions.join(", ")}`,
+      );
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const storageIds: Id<"_storage">[] = [];
+      for (const uri of validUris) {
+        const uploadUrl = await generateUploadUrl();
+        const sid = await uploadPhotoFromUri(uri, uploadUrl);
+        storageIds.push(sid);
+      }
+
+      const result = await createWithAI({
+        assetId,
+        intent: "routine",
+        photoStorageIds: storageIds,
+        photoDescriptions: template.photoDescriptions,
+        answers,
+        notes: notes || undefined,
+      });
+
+      const msg = buildAssessmentSuccessMessage(result.aiAnalysis);
+      Alert.alert("Assessment submitted", msg, [
+        { text: "OK", onPress: () => router.replace(`/a/${id}` as never) },
+      ]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Submit failed";
+      Alert.alert("Error", msg);
+    } finally {
+      setSubmitting(false);
+    }
+  }, [
+    id,
+    assetId,
+    template,
+    photoUris,
+    answers,
+    notes,
+    generateUploadUrl,
+    createWithAI,
+    router,
+  ]);
 
   if (template === undefined) {
     return (
@@ -39,6 +112,10 @@ export default function InspectionScreen() {
     setAnswers((prev) => ({ ...prev, [key]: value }));
   };
 
+  const requiredCount = template.photoDescriptions.length;
+  const hasAllPhotos =
+    photoUris.slice(0, requiredCount).filter(Boolean).length >= requiredCount;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Inspect</Text>
@@ -47,10 +124,14 @@ export default function InspectionScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Photos</Text>
         {template.photoDescriptions.map((desc, i) => (
-          <View key={`${i}-${desc}`} style={styles.photoSlot}>
-            <Text style={styles.photoLabel}>{i + 1}. {desc}</Text>
-            <Text style={styles.placeholder}>Camera integration coming</Text>
-          </View>
+          <PhotoCaptureSlot
+            key={`${i}-${desc}`}
+            label={`${i + 1}. ${desc}`}
+            value={photoUris[i] || null}
+            onCapture={(uri) => setPhoto(i, uri)}
+            onClear={() => setPhoto(i, null)}
+            disabled={submitting}
+          />
         ))}
       </View>
 
@@ -82,8 +163,14 @@ export default function InspectionScreen() {
         />
       </View>
 
-      <Pressable style={styles.submitButton}>
-        <Text style={styles.submitText}>Submit inspection</Text>
+      <Pressable
+        style={[styles.submitButton, (!hasAllPhotos || submitting) && styles.submitButtonDisabled]}
+        onPress={handleSubmit}
+        disabled={!hasAllPhotos || submitting}
+      >
+        <Text style={styles.submitText}>
+          {submitting ? "Submitting..." : "Submit inspection"}
+        </Text>
       </Pressable>
     </ScrollView>
   );
@@ -115,5 +202,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 12,
   },
+  submitButtonDisabled: { opacity: 0.6 },
   submitText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
