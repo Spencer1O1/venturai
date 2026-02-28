@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { DataQueryPanel } from "@/components/DataQueryPanel";
 import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
 import { MOCK_ASSETS } from "@/lib/mockData";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const assets = [...MOCK_ASSETS].sort((a, b) => b.riskScore - a.riskScore);
@@ -20,10 +20,18 @@ export default function DashboardPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-card-border bg-card/80">
-                <th className="px-6 py-4 font-medium text-foreground/80">Asset</th>
-                <th className="px-6 py-4 font-medium text-foreground/80">Location</th>
-                <th className="px-6 py-4 font-medium text-foreground/80">Risk</th>
-                <th className="px-6 py-4 font-medium text-foreground/80">Open items</th>
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Asset
+                </th>
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Location
+                </th>
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Risk
+                </th>
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Open items
+                </th>
                 <th className="px-6 py-4 font-medium text-foreground/80" />
               </tr>
             </thead>

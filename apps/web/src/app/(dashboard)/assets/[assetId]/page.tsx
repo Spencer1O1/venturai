@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { RiskBadge } from "@/components/RiskBadge";
 import { MOCK_ASSETS, MOCK_WORK_ITEMS } from "@/lib/mockData";
+import Link from "next/link";
 
 type Props = { params: Promise<{ assetId: string }> };
 
@@ -15,7 +15,10 @@ export default async function AssetDetailPage({ params }: Props) {
     return (
       <div className="p-8">
         <p className="text-foreground/70">Asset not found.</p>
-        <Link href="/" className="mt-4 inline-block text-primary hover:underline">
+        <Link
+          href="/"
+          className="mt-4 inline-block text-primary hover:underline"
+        >
           ← Back to dashboard
         </Link>
       </div>
@@ -33,8 +36,12 @@ export default async function AssetDetailPage({ params }: Props) {
 
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{asset.name}</h1>
-          <p className="mt-1 text-foreground/60">{asset.location ?? "No location"}</p>
+          <h1 className="text-2xl font-semibold text-foreground">
+            {asset.name}
+          </h1>
+          <p className="mt-1 text-foreground/60">
+            {asset.location ?? "No location"}
+          </p>
         </div>
         <RiskBadge riskScore={asset.riskScore} />
       </header>
@@ -46,19 +53,27 @@ export default async function AssetDetailPage({ params }: Props) {
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <dt className="text-xs text-foreground/50">Risk score</dt>
-            <dd className="mt-0.5 font-medium text-foreground">{asset.riskScore}</dd>
+            <dd className="mt-0.5 font-medium text-foreground">
+              {asset.riskScore}
+            </dd>
           </div>
           <div>
             <dt className="text-xs text-foreground/50">Risk load</dt>
-            <dd className="mt-0.5 font-medium text-foreground">{asset.riskLoad}</dd>
+            <dd className="mt-0.5 font-medium text-foreground">
+              {asset.riskLoad}
+            </dd>
           </div>
           <div>
             <dt className="text-xs text-foreground/50">Open work items</dt>
-            <dd className="mt-0.5 font-medium text-foreground">{asset.openWorkItemCount}</dd>
+            <dd className="mt-0.5 font-medium text-foreground">
+              {asset.openWorkItemCount}
+            </dd>
           </div>
           <div>
             <dt className="text-xs text-foreground/50">Asset ID</dt>
-            <dd className="mt-0.5 font-mono text-sm text-foreground/80">{asset.id}</dd>
+            <dd className="mt-0.5 font-mono text-sm text-foreground/80">
+              {asset.id}
+            </dd>
           </div>
         </dl>
       </section>
@@ -78,7 +93,9 @@ export default async function AssetDetailPage({ params }: Props) {
                 key={item.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card-border bg-card p-4"
               >
-                <span className="font-medium text-foreground">{item.title}</span>
+                <span className="font-medium text-foreground">
+                  {item.title}
+                </span>
                 <RiskBadge riskScore={item.riskValue} />
               </li>
             ))}

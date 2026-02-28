@@ -1,13 +1,15 @@
 import "./globals.css";
+import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import type { Metadata } from "next";
-import { DashboardShell } from "@/components/DashboardShell";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Venturai – Inspection Intelligence",
   description: "AI-powered inspection intelligence for industrial equipment",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,6 +18,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: Used for theme purposes
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -30,7 +33,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <DashboardShell>{children}</DashboardShell>
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );
