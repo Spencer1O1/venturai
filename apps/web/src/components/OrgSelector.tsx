@@ -1,6 +1,7 @@
 "use client";
 
 import { useSelectedOrg } from "@/hooks/useSelectedOrg";
+import type { Id } from "@venturai/backend/dataModel";
 
 export function OrgSelector() {
   const { orgId, orgs, setOrgId } = useSelectedOrg();
@@ -18,7 +19,7 @@ export function OrgSelector() {
       <select
         id="org-select"
         value={orgId ?? ""}
-        onChange={(e) => setOrgId(e.target.value as typeof orgId)}
+        onChange={(e) => setOrgId(e.target.value as Id<"orgs">)}
         className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
       >
         {orgs.map((org) => (
