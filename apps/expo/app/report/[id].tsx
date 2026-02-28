@@ -1,6 +1,10 @@
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import type { Id } from "@venturai/backend/dataModel";
+import { api } from "@venturai/backend";
+import { useAction, useMutation } from "convex/react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,14 +13,53 @@ import {
   View,
 } from "react-native";
 
+import { PhotoCaptureSlot } from "../../components/PhotoCaptureSlot";
+import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
+
 /**
  * Report a problem flow - problem assessment.
  * Take photo of problem, enter details, submit.
- * TODO: Wire to Convex - storage upload, api.assessments.actions.createWithAI (intent: problem)
  */
 export default function ReportProblemScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const assetId = id as Id<"assets">;
+
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const createWithAI = useAction(api.assessments.actions.createWithAI);
+
+  const handleSubmit = useCallback(async () => {
+    if (!id || !photoUri) {
+      Alert.alert("Photo required", "Please take a photo of the problem.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const uploadUrl = await generateUploadUrl();
+      const storageId = await uploadPhotoFromUri(photoUri, uploadUrl);
+
+      await createWithAI({
+        assetId,
+        intent: "problem",
+        photoStorageIds: [storageId],
+        photoDescriptions: ["Photo of the problem"],
+        answers: {},
+        notes: description || undefined,
+      });
+
+      router.replace(`/a/${id}` as never);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Submit failed";
+      Alert.alert("Error", msg);
+    } finally {
+      setSubmitting(false);
+    }
+  }, [id, assetId, photoUri, description, generateUploadUrl, createWithAI, router]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -25,15 +68,19 @@ export default function ReportProblemScreen() {
 
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Photo of problem</Text>
-        <Text style={styles.placeholder}>
-          Take photo of the issue – camera integration coming
-        </Text>
+        <PhotoCaptureSlot
+          label="Take a photo of the issue"
+          value={photoUri}
+          onCapture={setPhotoUri}
+          onClear={() => setPhotoUri(null)}
+          disabled={submitting}
+        />
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Describe the issue</Text>
         <TextInput
-          placeholder="What’s wrong? When did you notice it?"
+          placeholder="What's wrong? When did you notice it?"
           value={description}
           onChangeText={setDescription}
           multiline
@@ -41,8 +88,14 @@ export default function ReportProblemScreen() {
         />
       </View>
 
-      <Pressable style={styles.submitButton}>
-        <Text style={styles.submitText}>Submit report</Text>
+      <Pressable
+        style={[styles.submitButton, (!photoUri || submitting) && styles.submitButtonDisabled]}
+        onPress={handleSubmit}
+        disabled={!photoUri || submitting}
+      >
+        <Text style={styles.submitText}>
+          {submitting ? "Submitting..." : "Submit report"}
+        </Text>
       </Pressable>
     </ScrollView>
   );
@@ -54,7 +107,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
   section: { marginBottom: 20 },
   sectionLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
-  placeholder: { fontSize: 14, color: "#94a3b8", marginBottom: 8 },
   input: {
     borderWidth: 1,
     borderColor: "#e2e8f0",
@@ -69,5 +121,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 12,
   },
+  submitButtonDisabled: { opacity: 0.6 },
   submitText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
