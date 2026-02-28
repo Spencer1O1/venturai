@@ -67,7 +67,9 @@ export function AIAnalysisSchema() {
                 required: ["name", "qty"],
               },
             },
-            estimated_cost: { type: "number" },
+            estimated_cost: {
+              anyOf: [{ type: "number" }, { type: "null" }],
+            },
           },
           required: [
             "suggested_key",
@@ -79,6 +81,8 @@ export function AIAnalysisSchema() {
             "reason",
             "description",
             "estimated_effort",
+            "recommended_parts",
+            "estimated_cost",
           ],
         },
       },

@@ -258,7 +258,7 @@ export default function RegisterAssetScreen() {
         <Text style={styles.title}>Edit asset details</Text>
         <Text style={styles.subtitle}>Review and adjust AI suggestions.</Text>
 
-        {groups.length > 0 && !form.maintenanceGroupId && (
+        {groups.length > 0 && (
           <>
             <Text style={styles.label}>Maintenance group</Text>
             <View style={styles.groupList}>

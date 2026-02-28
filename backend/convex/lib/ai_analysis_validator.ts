@@ -23,8 +23,8 @@ const workItemValidator = v.object({
     v.literal("medium"),
     v.literal("heavy"),
   ),
-  recommended_parts: v.optional(v.array(recommendedPartValidator)),
-  estimated_cost: v.optional(v.number()),
+  recommended_parts: v.array(recommendedPartValidator),
+  estimated_cost: v.union(v.number(), v.null()),
 });
 
 const findingValidator = v.object({

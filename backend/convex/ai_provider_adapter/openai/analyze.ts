@@ -21,6 +21,7 @@ function buildSystemPrompt(): string {
     "- overall_priority, priority, severity: numbers in [0.0, 1.0].",
     "- risk_value: integer in [0, 100].",
     "- estimated_effort: one of quick, medium, heavy.",
+    "- recommended_parts: [] when none; estimated_cost: null when unknown.",
     "",
     "SCORING RUBRIC:",
     "- severity (0..1): impact if unaddressed (safety, downtime, cost). Use in findings and workItems.",

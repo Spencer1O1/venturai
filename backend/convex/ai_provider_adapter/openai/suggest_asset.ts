@@ -12,7 +12,7 @@ function buildSystemPrompt(groupsList: string): string {
     "- Do not invent specifics that are not visible in the photo.",
     "- name: Human-readable asset name.",
     "- maintenance_group_id: MUST be exactly one of the IDs from the MAINTENANCE_GROUPS list below. Use the ID string, not the name.",
-    "- manufacturer, model, serial: Include ONLY if visible/readable in the photo. Omit the field entirely if not visible.",
+    "- manufacturer, model, serial: Use string if visible/readable in the photo; use null if not visible.",
     "",
     "MAINTENANCE_GROUPS (maintenance_group_id must equal one of the IDs):",
     groupsList,

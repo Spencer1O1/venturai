@@ -3,9 +3,9 @@ import { z } from "zod/v4";
 export const assetSuggestionSchema = z.object({
   name: z.string().min(1),
   maintenance_group_id: z.string().min(1),
-  manufacturer: z.string().optional(),
-  model: z.string().optional(),
-  serial: z.string().optional(),
+  manufacturer: z.string().nullable(),
+  model: z.string().nullable(),
+  serial: z.string().nullable(),
 });
 
 export type AssetSuggestion = z.infer<typeof assetSuggestionSchema>;

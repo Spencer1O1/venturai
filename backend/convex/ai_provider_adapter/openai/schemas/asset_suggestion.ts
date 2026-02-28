@@ -9,10 +9,16 @@ export function AssetSuggestionSchema(groupIds: string[]) {
     properties: {
       name: { type: "string", minLength: 1 },
       maintenance_group_id: { type: "string", enum: groupIds },
-      manufacturer: { type: "string" },
-      model: { type: "string" },
-      serial: { type: "string" },
+      manufacturer: {
+        anyOf: [{ type: "string" }, { type: "null" }],
+      },
+      model: {
+        anyOf: [{ type: "string" }, { type: "null" }],
+      },
+      serial: {
+        anyOf: [{ type: "string" }, { type: "null" }],
+      },
     },
-    required: ["name", "maintenance_group_id"],
+    required: ["name", "maintenance_group_id", "manufacturer", "model", "serial"],
   } as const;
 }

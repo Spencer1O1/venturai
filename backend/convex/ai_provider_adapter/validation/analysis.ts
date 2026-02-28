@@ -21,8 +21,8 @@ const workItemSchema = z.object({
   reason: z.string(),
   description: z.string(),
   estimated_effort: z.enum(["quick", "medium", "heavy"]),
-  recommended_parts: z.array(recommendedPartSchema).optional(),
-  estimated_cost: z.number().optional(),
+  recommended_parts: z.array(recommendedPartSchema),
+  estimated_cost: z.number().nullable(),
 });
 
 const findingSchema = z.object({

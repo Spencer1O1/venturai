@@ -84,9 +84,9 @@ export const suggestFromPhoto = action({
     return {
       name: suggestion.name,
       maintenanceGroupId: validGroup._id,
-      manufacturer: suggestion.manufacturer,
-      model: suggestion.model,
-      serial: suggestion.serial,
+      manufacturer: suggestion.manufacturer ?? undefined,
+      model: suggestion.model ?? undefined,
+      serial: suggestion.serial ?? undefined,
     };
   },
 });

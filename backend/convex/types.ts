@@ -1,5 +1,5 @@
-// AI result type re-exported from ai_provider_adapter
-export type { AIOutput as AIResult } from "./ai_provider_adapter/ai_output_schema";
+// AI analysis result (assessment output with workItems, findings, etc.)
+export type { AIAnalysis } from "./ai_provider_adapter/validation/analysis";
 
 export type PreviousAiContext = {
   confidence: number;
