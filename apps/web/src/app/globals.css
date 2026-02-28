@@ -18,23 +18,20 @@
   background: var(--background);
 }
 
-/* Dark mode – theme from lib/theme.ts */
+/* Dark mode - VENTURAI aesthetic */
 .dark {
-  --background: #0D1117;
-  --foreground: #E6EDF3;
-  --card: #21262D;
-  --card-border: #30363D;
-  --primary: #00ACE6;
-  --primary-light: #33bdea;
-  --link: #00ACE6;
-  --accent: #00ACE6;
-  --accent-muted: rgba(0, 172, 230, 0.6);
-  --text-muted: #8B949E;
-  --text-subtle: #6E7681;
-  --border: #30363D;
-  --success: #00D68F;
-  --error: #F87171;
-  --warning: #FBBF24;
+  --background: #0d1117;
+  --foreground: #e6edf3;
+  --card: #161b22;
+  --card-border: #21262d;
+  --primary: #00d4ff;
+  --primary-foreground: #0d1117;
+  --primary-light: #48cae4;
+  --accent: #00ffff;
+  --accent-glow: rgba(0, 212, 255, 0.35);
+  --link: #00d4ff;
+  --muted: #8b949e;
+  --metallic: #c0c0c0;
   color: var(--foreground);
   background: var(--background);
 }
@@ -72,7 +69,7 @@ a:hover {
 }
 
 .dark .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 212, 255, 0.08);
 }
 
 .theme-toggle input {

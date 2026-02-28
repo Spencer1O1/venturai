@@ -15,6 +15,7 @@ import {
 
 import { PhotoCaptureSlot } from "../../components/PhotoCaptureSlot";
 import { buildAssessmentSuccessMessage } from "../../lib/assessmentSuccessMessage";
+import { theme } from "../../lib/theme";
 import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
 
 /**
@@ -85,6 +86,7 @@ export default function ReportProblemScreen() {
         <Text style={styles.sectionLabel}>Describe the issue</Text>
         <TextInput
           placeholder="What's wrong? When did you notice it?"
+          placeholderTextColor={theme.textMuted}
           value={description}
           onChangeText={setDescription}
           multiline
@@ -106,25 +108,50 @@ export default function ReportProblemScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 4 },
-  subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: theme.background,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 4,
+    color: theme.text,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: theme.textMuted,
+    marginBottom: 24,
+  },
   section: { marginBottom: 20 },
-  sectionLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: theme.textMuted,
+  },
   input: {
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderColor: theme.border,
+    borderRadius: 10,
     padding: 12,
     minHeight: 100,
+    backgroundColor: theme.backgroundElevated,
+    color: theme.text,
   },
   submitButton: {
-    backgroundColor: "#dc2626",
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: theme.error,
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
     alignItems: "center",
     marginTop: 12,
   },
   submitButtonDisabled: { opacity: 0.6 },
-  submitText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  submitText: {
+    color: theme.background,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
 });

@@ -16,6 +16,7 @@ import {
 
 import { PhotoCaptureSlot } from "../../components/PhotoCaptureSlot";
 import { buildAssessmentSuccessMessage } from "../../lib/assessmentSuccessMessage";
+import { theme } from "../../lib/theme";
 import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
 
 /**
@@ -103,7 +104,7 @@ export default function InspectionScreen() {
   if (template === undefined) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.accent} />
       </View>
     );
   }
@@ -143,6 +144,7 @@ export default function InspectionScreen() {
               <Text style={styles.questionLabel}>{q.label}</Text>
               <TextInput
                 placeholder={q.type === "text" ? "Enter..." : String(q.type)}
+                placeholderTextColor={theme.textMuted}
                 value={String(answers[q.key] ?? "")}
                 onChangeText={(v) => handleAnswerChange(q.key, v)}
                 style={styles.input}
@@ -156,6 +158,7 @@ export default function InspectionScreen() {
         <Text style={styles.sectionLabel}>Notes (optional)</Text>
         <TextInput
           placeholder="Additional observations..."
+          placeholderTextColor={theme.textMuted}
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -177,31 +180,55 @@ export default function InspectionScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
+  container: {
+    padding: 24,
+    backgroundColor: theme.background,
+  },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 4 },
-  subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 4,
+    color: theme.text,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: theme.textMuted,
+    marginBottom: 24,
+  },
   section: { marginBottom: 20 },
-  sectionLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: theme.textMuted,
+  },
   photoSlot: { marginBottom: 12 },
-  photoLabel: { fontSize: 14, marginBottom: 4 },
+  photoLabel: { fontSize: 14, marginBottom: 4, color: theme.text },
   questionRow: { marginBottom: 12 },
-  questionLabel: { fontSize: 14, marginBottom: 4 },
-  placeholder: { fontSize: 14, color: "#94a3b8" },
+  questionLabel: { fontSize: 14, marginBottom: 4, color: theme.text },
+  placeholder: { fontSize: 14, color: theme.textMuted },
   input: {
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderColor: theme.border,
+    borderRadius: 10,
     padding: 12,
     minHeight: 80,
+    backgroundColor: theme.backgroundElevated,
+    color: theme.text,
   },
   submitButton: {
-    backgroundColor: "#2563eb",
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: theme.buttonPrimary,
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
     alignItems: "center",
     marginTop: 12,
   },
   submitButtonDisabled: { opacity: 0.6 },
-  submitText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  submitText: {
+    color: theme.background,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
 });

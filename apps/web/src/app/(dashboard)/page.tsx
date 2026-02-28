@@ -5,6 +5,11 @@ import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { getRiskTier } from "@/lib/risk";
 import { api } from "@venturai/backend";
 import type { Id } from "@venturai/backend/dataModel";
+import { api } from "@venturai/backend";
+import type { Id } from "@venturai/backend/dataModel";
+//import { DataQueryPanel } from "@/components/DataQueryPanel";
+import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
+import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 
@@ -62,9 +67,12 @@ export default function DashboardPage() {
     orgId ? { orgId } : "skip",
   );
 
-  const assetNameById = new Map<Id<"assets">, string>();
-  for (const a of assets ?? []) {
-    assetNameById.set(a._id, a.name);
+  const openCountByAsset = new Map<Id<"assets">, number>();
+  for (const wi of openWorkItems ?? []) {
+    openCountByAsset.set(
+      wi.assetId,
+      (openCountByAsset.get(wi.assetId) ?? 0) + 1,
+    );
   }
 
   const highRiskItems = (openWorkItems ?? []).slice(0, 5);
@@ -132,167 +140,64 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
-        <div className="rounded-xl border border-card-border bg-card p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Total Assets</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">{totalAssets}</p>
-          {totalAssets > 0 && (
-            <p className="mt-0.5 flex items-center gap-1 text-sm text-risk-low">
-              <span aria-hidden>▲</span> +{totalAssets}
-            </p>
-          )}
-        </div>
-        <div className="rounded-xl border border-card-border bg-card p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Issues Found</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">{issuesFound}</p>
-          <p className="mt-0.5 text-sm text-foreground/60">{issuesRate}% rate</p>
-        </div>
-        <div className="rounded-xl border border-card-border bg-card p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">High Risk</p>
-          <p className="mt-1 text-2xl font-bold text-risk-critical">{highRiskCount}</p>
-          <p className="mt-0.5 text-sm text-risk-critical">Requires Action</p>
-        </div>
-        <div className="rounded-xl border border-card-border bg-card p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Open Actions</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">{issuesFound}</p>
-          <p className="mt-0.5 text-sm text-risk-high">Pending</p>
-        </div>
-        <div className="rounded-xl border border-card-border bg-card p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Completed</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">—</p>
-          <p className="mt-0.5 text-sm text-foreground/60">Last 24h</p>
-        </div>
-        <div className="rounded-xl border border-card-border bg-card p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Avg Risk Score</p>
-          <p className="mt-1 text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-            {avgRiskScore}
+    <div className="flex flex-1 flex-col gap-6 p-8 lg:flex-row">
+      <div className="order-2 min-w-0 flex-1 lg:order-1">
+        <header className="mb-6">
+          <h1 className="text-2xl font-semibold text-foreground">Assets</h1>
+          <p className="mt-1 text-sm text-foreground/60">
+            Sorted by risk. Tap an asset to view details or open work items.
           </p>
-          <div className="relative mt-3 h-8 w-full">
-            <span
-              className="absolute bottom-2 left-0 text-sm leading-none"
-              style={{
-                color: "var(--foreground)",
-                transform: "translateX(-50%)",
-                left: `${Math.min(Math.max(avgRiskScoreNum, 0), 100)}%`,
-              }}
-              aria-hidden
-            >
-              ▼
-            </span>
-            <div
-              className="absolute bottom-0 left-0 right-0 h-2 overflow-hidden rounded-full"
-              style={{
-                background: "linear-gradient(90deg, #00D68F, #FBBF24, #f97316, #F87171)",
-              }}
-            />
-          </div>
-        </div>
-      </div>
+        </header>
 
-      {/* Two-column layout */}
-      <div className="grid flex-1 gap-6 lg:grid-cols-3">
-        {/* Left column */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
-          {/* High Risk Actions */}
-          <div className="rounded-xl border border-card-border bg-card p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-risk-critical" aria-hidden>▲</span>
-                <h2 className="font-semibold text-foreground">High Risk Actions</h2>
-                {highRiskCount > 0 && (
-                  <span className="rounded-full bg-risk-critical/20 px-2 py-0.5 text-xs font-medium text-risk-critical">
-                    Critical Attention Needed
-                  </span>
-                )}
-              </div>
-              <Link href="/work-items" className="text-sm text-primary hover:underline">
-                View All →
-              </Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-card-border text-foreground/60">
-                    <th className="pb-3 pr-4 font-medium">Score</th>
-                    <th className="pb-3 pr-4 font-medium">Issue</th>
-                    <th className="pb-3 pr-4 font-medium">Asset</th>
-                    <th className="pb-3 pr-4 font-medium">Status</th>
-                    <th className="pb-3 font-medium" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {highRiskItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-foreground/60">
-                        No high-risk actions
-                      </td>
-                    </tr>
-                  ) : (
-                    highRiskItems.map((item) => (
-                      <tr key={item._id} className="border-b border-card-border/50 last:border-0">
-                        <td className="py-3 pr-4">
-                          <RiskHeatmapPill riskScore={item.riskValue} />
-                        </td>
-                        <td className="py-3 pr-4">
-                          <span className="font-medium text-foreground">{item.title}</span>
-                          <p className="text-xs text-foreground/60">
-                            {new Date(item.firstSeenAt).toLocaleDateString()}
-                          </p>
-                        </td>
-                        <td className="py-3 pr-4">
-                          <Link
-                            href={`/assets/${item.assetId}`}
-                            className="text-foreground/70 hover:text-primary hover:underline"
-                          >
-                            {assetNameById.get(item.assetId) ?? "—"}
-                          </Link>
-                        </td>
-                        <td className="py-3 pr-4">
-                          <span className="rounded-md bg-risk-critical/20 px-2 py-0.5 text-xs text-risk-critical">
-                            Unacknowledged
-                          </span>
-                        </td>
-                        <td className="py-3">
-                          <button type="button" className="p-1 text-foreground/60 hover:text-foreground" aria-label="Actions">
-                            ⋮
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="rounded-xl border border-card-border bg-card p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <RefreshIcon />
-              <h2 className="font-semibold text-foreground">Recent Activity</h2>
-            </div>
-            <ul className="space-y-3">
-              {highRiskItems.slice(0, 3).map((item) => (
-                <li key={item._id} className="flex gap-3">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-risk-low" aria-hidden />
-                  <div>
-                    <p className="text-sm text-foreground">
-                      {item.title}{" "}
-                      on{" "}
-                      <Link
-                        href={`/assets/${item.assetId}`}
-                        className="text-primary hover:underline"
-                      >
-                        {assetNameById.get(item.assetId) ?? "asset"}
-                      </Link>
-                    </p>
-                    <p className="text-xs text-foreground/60">
-                      {new Date(item.firstSeenAt).toLocaleDateString()} • Detected
-                    </p>
-                  </div>
-                </li>
+        <div className="overflow-hidden rounded-xl border border-card-border bg-card shadow-[0_0_20px_rgba(0,212,255,0.06)]">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-card-border bg-card/80">
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Asset
+                </th>
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Location
+                </th>
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Risk
+                </th>
+                <th className="px-6 py-4 font-medium text-foreground/80">
+                  Open items
+                </th>
+                <th className="px-6 py-4 font-medium text-foreground/80" />
+              </tr>
+            </thead>
+            <tbody>
+              {(assets ?? []).map((asset) => (
+                <tr
+                  key={asset._id}
+                  className="border-b border-card-border/50 transition-colors hover:bg-card-border/20"
+                >
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/assets/${asset._id}`}
+                      className="font-medium text-foreground hover:text-primary"
+                    >
+                      {asset.name}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 text-foreground/70">
+                    {asset.locationText ?? "—"}
+                  </td>
+                  <RiskHeatmapCell riskScore={asset.riskScore} />
+                  <td className="px-6 py-4 text-foreground/70">
+                    {openCountByAsset.get(asset._id) ?? 0}
+                  </td>
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/work-items?asset=${asset._id}`}
+                      className="text-primary hover:underline"
+                    >
+                      View work items →
+                    </Link>
+                  </td>
+                </tr>
               ))}
               {highRiskItems.length === 0 && (
                 <li className="text-sm text-foreground/60">No recent activity</li>

@@ -15,6 +15,7 @@ import {
 } from "react-native";
 
 import { PhotoListCapture } from "../../components/PhotoListCapture";
+import { theme } from "../../lib/theme";
 import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
 
 /**
@@ -97,7 +98,7 @@ export default function ReportMaintenanceScreen() {
   if (asset === undefined || workItems === undefined) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.accent} />
       </View>
     );
   }
@@ -157,6 +158,7 @@ export default function ReportMaintenanceScreen() {
       <Text style={styles.sectionLabel}>Notes (optional)</Text>
       <TextInput
         placeholder="What was done? Parts replaced? Time spent?"
+        placeholderTextColor={theme.textMuted}
         value={notes}
         onChangeText={setNotes}
         multiline
@@ -182,53 +184,96 @@ export default function ReportMaintenanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: theme.background,
+  },
   centered: { justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 4 },
-  subtitle: { fontSize: 14, color: "#64748b", marginBottom: 20 },
-  sectionLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
-  emptyText: { fontSize: 14, color: "#94a3b8", marginBottom: 20 },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 4,
+    color: theme.text,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: theme.textMuted,
+    marginBottom: 20,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: theme.textMuted,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: theme.textMuted,
+    marginBottom: 20,
+  },
   list: { maxHeight: 220, marginBottom: 20 },
   workItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
-    backgroundColor: "#f1f5f9",
-    borderRadius: 8,
+    backgroundColor: theme.backgroundElevated,
+    borderRadius: 10,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
   },
   workItemSelected: {
-    backgroundColor: "#d1fae5",
+    backgroundColor: theme.successBg,
     borderWidth: 2,
-    borderColor: "#059669",
+    borderColor: theme.success,
   },
   workItemContent: { flex: 1 },
-  workItemTitle: { fontSize: 15, marginBottom: 4 },
-  riskBadge: { fontSize: 12, color: "#64748b" },
-  checkbox: { fontSize: 18, color: "#059669", fontWeight: "600" },
+  workItemTitle: { fontSize: 15, marginBottom: 4, color: theme.text },
+  riskBadge: { fontSize: 12, color: theme.textMuted },
+  checkbox: { fontSize: 18, color: theme.success, fontWeight: "600" },
   notesInput: {
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderColor: theme.border,
+    borderRadius: 10,
     padding: 12,
     minHeight: 80,
     marginBottom: 20,
+    backgroundColor: theme.backgroundElevated,
+    color: theme.text,
   },
   submitButton: {
-    backgroundColor: "#059669",
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: theme.success,
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
     alignItems: "center",
   },
-  submitButtonDisabled: { backgroundColor: "#94a3b8", opacity: 0.7 },
-  submitText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  submitButtonDisabled: {
+    backgroundColor: theme.buttonSecondary,
+    borderWidth: 1,
+    borderColor: theme.border,
+    opacity: 0.7,
+  },
+  submitText: {
+    color: theme.background,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
   backButton: {
-    backgroundColor: "#64748b",
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: theme.buttonSecondary,
+    borderWidth: 1,
+    borderColor: theme.border,
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
     alignItems: "center",
     marginTop: 16,
   },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  buttonText: {
+    color: theme.text,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
 });

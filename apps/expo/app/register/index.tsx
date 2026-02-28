@@ -16,6 +16,7 @@ import {
 } from "react-native";
 
 import { initNfc, nfcAssetUrl, writeUrlToNfcTag } from "../../lib/nfc";
+import { theme } from "../../lib/theme";
 import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
 
 type Step =
@@ -209,7 +210,7 @@ export default function RegisterAssetScreen() {
   if (adminOrgs === undefined) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.accent} />
       </View>
     );
   }
@@ -258,7 +259,7 @@ export default function RegisterAssetScreen() {
   if (step === "suggesting") {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.accent} />
         <Text style={styles.hint}>AI is analyzing the photo...</Text>
       </View>
     );
@@ -301,6 +302,7 @@ export default function RegisterAssetScreen() {
           value={form.name}
           onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
           placeholder="Asset name"
+          placeholderTextColor={theme.textMuted}
         />
         <Text style={styles.label}>Manufacturer</Text>
         <TextInput
@@ -308,6 +310,7 @@ export default function RegisterAssetScreen() {
           value={form.manufacturer}
           onChangeText={(v) => setForm((f) => ({ ...f, manufacturer: v }))}
           placeholder="Optional"
+          placeholderTextColor={theme.textMuted}
         />
         <Text style={styles.label}>Model</Text>
         <TextInput
@@ -315,6 +318,7 @@ export default function RegisterAssetScreen() {
           value={form.model}
           onChangeText={(v) => setForm((f) => ({ ...f, model: v }))}
           placeholder="Optional"
+          placeholderTextColor={theme.textMuted}
         />
         <Text style={styles.label}>Serial</Text>
         <TextInput
@@ -322,6 +326,7 @@ export default function RegisterAssetScreen() {
           value={form.serial}
           onChangeText={(v) => setForm((f) => ({ ...f, serial: v }))}
           placeholder="Optional"
+          placeholderTextColor={theme.textMuted}
         />
 
         <Pressable
@@ -357,7 +362,7 @@ export default function RegisterAssetScreen() {
   if (step === "creating") {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.accent} />
         <Text style={styles.hint}>Creating asset...</Text>
       </View>
     );
@@ -381,7 +386,7 @@ export default function RegisterAssetScreen() {
           style={[styles.button, styles.buttonSecondary]}
           onPress={() => setStep("write")}
         >
-          <Text style={styles.buttonText}>Skip for now</Text>
+          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>Skip for now</Text>
         </Pressable>
       </View>
     );
@@ -411,6 +416,7 @@ export default function RegisterAssetScreen() {
                 }))
               }
               placeholder={`Photo ${i + 1}`}
+              placeholderTextColor={theme.textMuted}
             />
             <Pressable
               style={styles.removeBtn}
@@ -454,6 +460,7 @@ export default function RegisterAssetScreen() {
                 }))
               }
               placeholder="key (snake_case)"
+              placeholderTextColor={theme.textMuted}
             />
             <TextInput
               style={[styles.input, styles.flex1]}
@@ -467,6 +474,7 @@ export default function RegisterAssetScreen() {
                 }))
               }
               placeholder="Label"
+              placeholderTextColor={theme.textMuted}
             />
             <View style={styles.typeRow}>
               {qTypes.map((t) => (
@@ -626,13 +634,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
+    backgroundColor: theme.background,
   },
-  container: { flex: 1, padding: 24 },
+  container: { flex: 1, padding: 24, backgroundColor: theme.background },
   pad: { paddingBottom: 48 },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
-  subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: theme.text,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: theme.textMuted,
+    marginBottom: 24,
+  },
   nfcSpinner: { marginVertical: 24 },
-  label: { fontSize: 14, fontWeight: "500", marginBottom: 4 },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 4,
+    color: theme.textMuted,
+  },
   labelTop: { marginTop: 24 },
   row: {
     flexDirection: "row",
@@ -645,16 +668,18 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: "#fee2e2",
+    backgroundColor: theme.errorBg,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: theme.error,
   },
-  removeBtnText: { fontSize: 18, color: "#dc2626", fontWeight: "600" },
+  removeBtnText: { fontSize: 18, color: theme.error, fontWeight: "600" },
   questionRow: {
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomColor: theme.border,
   },
   typeRow: { flexDirection: "row", gap: 8, marginTop: 8, marginBottom: 8 },
   typeChip: {
@@ -662,35 +687,50 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: theme.border,
+    backgroundColor: theme.backgroundElevated,
   },
-  typeChipSelected: { borderColor: "#2563eb", backgroundColor: "#eff6ff" },
-  typeChipText: { fontSize: 12, color: "#64748b" },
-  typeChipTextSelected: { color: "#2563eb", fontWeight: "600" },
+  typeChipSelected: {
+    borderColor: theme.accent,
+    backgroundColor: theme.accentGlow,
+  },
+  typeChipText: { fontSize: 12, color: theme.textMuted },
+  typeChipTextSelected: { color: theme.accent, fontWeight: "600" },
   smallBtn: { marginBottom: 16 },
   input: {
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderColor: theme.border,
+    borderRadius: 10,
     padding: 12,
     marginBottom: 16,
+    backgroundColor: theme.backgroundElevated,
+    color: theme.text,
   },
-  hint: { marginTop: 12, fontSize: 14, color: "#64748b" },
+  hint: { marginTop: 12, fontSize: 14, color: theme.textMuted },
   button: {
-    backgroundColor: "#2563eb",
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: theme.buttonPrimary,
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
     alignItems: "center",
     marginBottom: 12,
   },
-  buttonSecondary: { backgroundColor: "#64748b" },
+  buttonSecondary: {
+    backgroundColor: theme.buttonSecondary,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
   buttonOutline: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: theme.border,
   },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  buttonTextSecondary: { color: "#64748b" },
+  buttonText: {
+    color: theme.background,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
+  buttonTextSecondary: { color: theme.textMuted },
   groupList: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -702,8 +742,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: theme.border,
+    backgroundColor: theme.backgroundElevated,
   },
-  groupOptionSelected: { borderColor: "#2563eb", backgroundColor: "#eff6ff" },
-  groupName: { fontSize: 14 },
+  groupOptionSelected: {
+    borderColor: theme.accent,
+    backgroundColor: theme.accentGlow,
+  },
+  groupName: { fontSize: 14, color: theme.text },
 });

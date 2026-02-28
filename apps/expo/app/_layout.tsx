@@ -1,31 +1,57 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { api } from "@venturai/backend";
-import { ConvexReactClient } from "convex/react";
-import { useConvexAuth, useQuery } from "convex/react";
-import { useRouter } from "expo-router";
-import { Stack } from "expo-router";
+import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
 import * as Linking from "expo-linking";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Platform } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Platform, StatusBar } from "react-native";
 import NfcManager, { NfcEvents } from "react-native-nfc-manager";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { convexAuthStorage } from "../lib/convexAuthStorage";
 import {
   getNfcLaunchDestination,
-  parseUrlFromTagEvent,
   parseAssetIdFromUrl,
+  parseUrlFromTagEvent,
 } from "../lib/nfc";
+import { theme } from "../lib/theme";
 
 const convex = new ConvexReactClient(
   process.env.EXPO_PUBLIC_CONVEX_URL ?? "https://placeholder.convex.cloud",
 );
 
+/** Route name → header title. Dynamic routes use [id] pattern. */
+const ROUTE_TITLES: Record<string, string> = {
+  index: "VENTURAI",
+  "sign-in": "Sign In",
+  scan: "Scan",
+  register: "Register Asset",
+  "register/index": "Register",
+  "a/[id]": "Asset Interface",
+  "inspection/[id]": "Inspection",
+  "report/[id]": "Report",
+  "maintenance/[id]": "Maintenance",
+  "view/[id]": "Asset View",
+};
+
+function getHeaderTitle(routeName: string): string {
+  const exact = ROUTE_TITLES[routeName];
+  if (exact) return exact;
+  // Fallback: format segment names (e.g. "sign-in" → "Sign In")
+  return (
+    routeName
+      .replace(/\[.*?\]/g, "")
+      .replace(/[-_]/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .trim() || "VENTURAI"
+  );
+}
+
 function NfcLaunchHandler() {
   const router = useRouter();
-  const [pendingDest, setPendingDest] = useState<
-    string | "register" | null
-  >(null);
+  const [pendingDest, setPendingDest] = useState<string | "register" | null>(
+    null,
+  );
   const handledRef = useRef(false);
 
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -36,7 +62,9 @@ function NfcLaunchHandler() {
 
   const handleNfcTag = useCallback(
     (tag: { ndefMessage?: unknown[] }) => {
-      const url = parseUrlFromTagEvent(tag as Parameters<typeof parseUrlFromTagEvent>[0]);
+      const url = parseUrlFromTagEvent(
+        tag as Parameters<typeof parseUrlFromTagEvent>[0],
+      );
       const assetId = url ? parseAssetIdFromUrl(url) : null;
       if (assetId) {
         router.replace(`/a/${assetId}` as never);
@@ -48,7 +76,10 @@ function NfcLaunchHandler() {
   );
 
   useEffect(() => {
-    console.log("[NFC Launch] NfcLaunchHandler mounted, Platform:", Platform.OS);
+    console.log(
+      "[NFC Launch] NfcLaunchHandler mounted, Platform:",
+      Platform.OS,
+    );
     if (Platform.OS !== "android") return;
     const resolveLaunch = async () => {
       const nfcDest = await getNfcLaunchDestination();
@@ -75,7 +106,10 @@ function NfcLaunchHandler() {
       console.log("[NFC Launch] DiscoverBackgroundTag", tag);
       handleNfcTag(tag as { ndefMessage?: unknown[] });
     };
-    NfcManager.setEventListener(NfcEvents.DiscoverBackgroundTag, onBackgroundTag);
+    NfcManager.setEventListener(
+      NfcEvents.DiscoverBackgroundTag,
+      onBackgroundTag,
+    );
     return () => {
       NfcManager.setEventListener(NfcEvents.DiscoverBackgroundTag, null);
     };
@@ -116,13 +150,7 @@ function NfcLaunchHandler() {
     } else {
       log("skipping - no orgs");
     }
-  }, [
-    pendingDest,
-    isLoading,
-    isAuthenticated,
-    adminOrgs,
-    router,
-  ]);
+  }, [pendingDest, isLoading, isAuthenticated, adminOrgs, router]);
 
   return null;
 }
@@ -131,12 +159,19 @@ export default function RootLayout() {
   return (
     <ConvexAuthProvider client={convex} storage={convexAuthStorage}>
       <SafeAreaProvider>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={theme.background}
+        />
         <NfcLaunchHandler />
         <Stack
-          screenOptions={{
-            headerStyle: { backgroundColor: "#0f172a" },
-            headerTintColor: "#ffffff",
-          }}
+          screenOptions={({ route }) => ({
+            title: getHeaderTitle(route.name),
+            headerStyle: { backgroundColor: theme.background },
+            headerTintColor: theme.text,
+            headerShadowVisible: false,
+            contentStyle: { backgroundColor: theme.background },
+          })}
         />
       </SafeAreaProvider>
     </ConvexAuthProvider>

@@ -10,6 +10,8 @@ import {
   View,
 } from "react-native";
 
+import { theme } from "../lib/theme";
+
 type Props = {
   label: string;
   onPhotosChange: (uris: string[]) => void;
@@ -105,14 +107,19 @@ export function PhotoListCapture({
 
 const styles = StyleSheet.create({
   container: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: theme.text,
+  },
   thumbnails: { marginBottom: 8 },
   thumbWrapper: { position: "relative", marginRight: 8 },
   thumbnail: {
     width: 72,
     height: 72,
     borderRadius: 8,
-    backgroundColor: "#f1f5f9",
+    backgroundColor: theme.backgroundCard,
   },
   removeBtn: {
     position: "absolute",
@@ -121,20 +128,29 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#dc2626",
+    backgroundColor: theme.error,
     alignItems: "center",
     justifyContent: "center",
   },
-  removeBtnText: { color: "#fff", fontSize: 18, fontWeight: "600", lineHeight: 20 },
+  removeBtnText: {
+    color: theme.background,
+    fontSize: 18,
+    fontWeight: "600",
+    lineHeight: 20,
+  },
   addButton: {
-    backgroundColor: "#e2e8f0",
+    backgroundColor: theme.backgroundElevated,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     alignSelf: "flex-start",
     borderWidth: 2,
-    borderColor: "#cbd5e1",
+    borderColor: theme.border,
     borderStyle: "dashed",
   },
   addButtonDisabled: { opacity: 0.7 },
-  addButtonText: { fontSize: 14, color: "#475569", fontWeight: "500" },
+  addButtonText: {
+    fontSize: 14,
+    color: theme.textMuted,
+    fontWeight: "500",
+  },
 });

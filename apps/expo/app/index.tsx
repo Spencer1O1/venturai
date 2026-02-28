@@ -4,6 +4,8 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { theme } from "../lib/theme";
+
 export default function HomeScreen() {
   const router = useRouter();
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -15,48 +17,73 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Venturai</Text>
+      <Text style={styles.title}>VENTURAI</Text>
       <Text style={styles.subtitle}>Asset Management</Text>
 
-      <Pressable
-        style={styles.scanButton}
-        onPress={() => router.push("/scan" as never)}
-      >
-        <Text style={styles.scanText}>Scan NFC Tag</Text>
-      </Pressable>
-      <Text style={styles.hint}>
-        Hold your phone near an asset tag to open its dashboard.
-      </Text>
+      <View style={styles.buttonRow}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.button,
+            styles.scanButton,
+            pressed && styles.scanButtonPressed,
+          ]}
+          onPress={() => router.push("/scan" as never)}
+        >
+          <Text style={[styles.buttonText, styles.buttonTextPrimary]}>
+            Scan Data Dot
+          </Text>
+        </Pressable>
+        <Text style={styles.hint}>
+          Hold your phone near an asset tag to open its dashboard.
+        </Text>
 
-      {isAuthenticated ? (
-        <>
-          {adminOrgs && adminOrgs.length > 0 && (
+        {isAuthenticated ? (
+          <>
+            {adminOrgs && adminOrgs.length > 0 && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.secondaryButton,
+                  styles.secondaryButtonAccent,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={() => router.push("/register" as never)}
+              >
+                <Text style={[styles.buttonText, styles.buttonTextAccent]}>
+                  Register new asset
+                </Text>
+              </Pressable>
+            )}
             <Pressable
-              style={[styles.signInButton, styles.registerButton]}
-              onPress={() => router.push("/register" as never)}
+              style={({ pressed }) => [
+                styles.button,
+                styles.secondaryButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={async () => {
+                await signOut();
+              }}
             >
-              <Text style={[styles.signInText, styles.registerText]}>
-                Register new asset
+              <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+                Sign out
               </Text>
             </Pressable>
-          )}
+          </>
+        ) : (
           <Pressable
-            style={styles.signInButton}
-            onPress={async () => {
-              await signOut();
-            }}
+            style={({ pressed }) => [
+              styles.button,
+              styles.secondaryButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => router.push("/sign-in" as never)}
           >
-            <Text style={styles.signInText}>Sign out</Text>
+            <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+              Sign in (maintenance / admin)
+            </Text>
           </Pressable>
-        </>
-      ) : (
-        <Pressable
-          style={styles.signInButton}
-          onPress={() => router.push("/sign-in" as never)}
-        >
-          <Text style={styles.signInText}>Sign in (maintenance / admin)</Text>
-        </Pressable>
-      )}
+        )}
+      </View>
     </View>
   );
 }
@@ -67,29 +94,57 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
+    backgroundColor: theme.background,
   },
-  title: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
-  subtitle: { fontSize: 16, color: "#64748b", marginBottom: 40 },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 4,
+    color: theme.text,
+    letterSpacing: 2,
+  },
+  subtitle: { fontSize: 16, color: theme.textMuted, marginBottom: 40 },
+  buttonRow: { width: "100%", maxWidth: 320 },
+  button: {
+    alignSelf: "stretch",
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   scanButton: {
-    backgroundColor: "#1e40af",
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
+    backgroundColor: theme.buttonPrimary,
+    marginBottom: 12,
+    shadowColor: theme.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  scanText: { color: "#fff", fontSize: 18 },
-  hint: { fontSize: 12, color: "#94a3b8", marginTop: 12, textAlign: "center" },
-  signInButton: {
-    marginTop: 32,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+  scanButtonPressed: { opacity: 0.9 },
+  secondaryButton: {
+    marginTop: 12,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 8,
+    borderColor: theme.border,
+    backgroundColor: theme.backgroundElevated,
   },
-  signInText: { fontSize: 14, color: "#64748b" },
-  registerButton: {
-    borderColor: "#2563eb",
+  secondaryButtonAccent: {
+    borderColor: theme.accent,
     backgroundColor: "transparent",
   },
-  registerText: { color: "#60a5fa" },
+  buttonPressed: { opacity: 0.8 },
+  buttonText: {
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
+  buttonTextPrimary: { color: theme.background },
+  buttonTextSecondary: { color: theme.textMuted },
+  buttonTextAccent: { color: theme.accent },
+  hint: {
+    fontSize: 12,
+    color: theme.textMuted,
+    marginTop: 12,
+    textAlign: "center",
+  },
 });

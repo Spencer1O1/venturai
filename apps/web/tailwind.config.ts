@@ -9,17 +9,22 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ["var(--font-heading)", "system-ui", "sans-serif"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: {
           DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
           light: "var(--primary-light)",
-          glow: "var(--accent)",
+          glow: "#00d4ff",
         },
         accent: {
-          DEFAULT: "var(--accent, #00ACE6)",
-          muted: "var(--accent-muted)",
+          DEFAULT: "#00d4ff",
+          dark: "#00b4d8",
+          glow: "#00ffff",
         },
         card: {
           DEFAULT: "var(--card)",
@@ -48,21 +53,21 @@ const config: Config = {
         "glow-pulse": {
           "0%, 100%": {
             opacity: "1",
-            filter: "drop-shadow(0 0 8px #f97316)",
+            filter: "drop-shadow(0 0 8px #00d4ff)",
           },
           "50%": {
             opacity: "0.8",
-            filter: "drop-shadow(0 0 20px #f97316)",
+            filter: "drop-shadow(0 0 20px #00d4ff)",
           },
         },
         "glow-pulse-accent": {
           "0%, 100%": {
             opacity: "1",
-            filter: "drop-shadow(0 0 8px #00ACE6)",
+            filter: "drop-shadow(0 0 8px #00ffff)",
           },
           "50%": {
             opacity: "0.8",
-            filter: "drop-shadow(0 0 20px #00ACE6)",
+            filter: "drop-shadow(0 0 20px #00ffff)",
           },
         },
       },

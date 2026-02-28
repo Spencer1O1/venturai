@@ -2,6 +2,8 @@ import type { Id } from "@venturai/backend/dataModel";
 import { api } from "@venturai/backend";
 import { useQuery } from "convex/react";
 import { useLocalSearchParams } from "expo-router";
+
+import { theme } from "../../lib/theme";
 import {
   ActivityIndicator,
   Image,
@@ -84,7 +86,7 @@ export default function ViewHistoryScreen() {
   if (asset === undefined || assessments === undefined) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.accent} />
       </View>
     );
   }
@@ -114,18 +116,31 @@ export default function ViewHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: theme.background,
+  },
   centered: { justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 4 },
-  subtitle: { fontSize: 14, color: "#64748b", marginBottom: 20 },
-  empty: { fontSize: 14, color: "#94a3b8" },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 4,
+    color: theme.text,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: theme.textMuted,
+    marginBottom: 20,
+  },
+  empty: { fontSize: 14, color: theme.textMuted },
   card: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: theme.backgroundElevated,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: theme.border,
   },
   cardHeader: {
     flexDirection: "row",
@@ -136,20 +151,20 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#0f172a",
+    color: theme.text,
   },
-  cardDate: { fontSize: 13, color: "#64748b" },
+  cardDate: { fontSize: 13, color: theme.textMuted },
   photos: { marginBottom: 12 },
   photo: {
     width: 120,
     height: 120,
     borderRadius: 8,
     marginRight: 8,
-    backgroundColor: "#e2e8f0",
+    backgroundColor: theme.backgroundCard,
   },
   notes: {
     fontSize: 14,
-    color: "#475569",
+    color: theme.textMuted,
     lineHeight: 20,
   },
 });
