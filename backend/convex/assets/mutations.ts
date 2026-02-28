@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-import type { Id } from "../_generated/dataModel";
 import { mutation } from "../_generated/server";
 
 /**
@@ -22,10 +22,9 @@ export const create = mutation({
   },
   returns: v.id("assets"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-    const userId = identity.subject as Id<"users">;
     const org = await ctx.db.get(args.orgId);
     if (!org) throw new Error("Org not found");
 
@@ -75,10 +74,9 @@ export const updateTemplate = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-    const userId = identity.subject as Id<"users">;
     const asset = await ctx.db.get(args.assetId);
     if (!asset) throw new Error("Asset not found");
 
@@ -89,7 +87,8 @@ export const updateTemplate = mutation({
       )
       .unique();
 
-    if (membership?.role !== "admin") throw new Error("Must be admin of this org");
+    if (membership?.role !== "admin")
+      throw new Error("Must be admin of this org");
 
     if (args.templateId) {
       const tpl = await ctx.db.get(args.templateId);

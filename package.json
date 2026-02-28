@@ -2,6 +2,11 @@
   "name": "venturai",
   "version": "0.1.0",
   "private": true,
+  "pnpm": {
+    "overrides": {
+      "convex": "^1.32.0"
+    }
+  },
   "scripts": {
     "dev": "turbo run dev --parallel",
     "dev:expo": "pnpm --filter @venturai/expo dev",

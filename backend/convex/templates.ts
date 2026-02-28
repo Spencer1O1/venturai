@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 const additionalQuestionValidator = v.object({
@@ -43,10 +43,8 @@ export const create = mutation({
   },
   returns: v.id("assessmentTemplates"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
-
-    const userId = identity.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const org = await ctx.db.get(args.orgId);
     if (!org) throw new Error("Org not found");
 
@@ -57,7 +55,8 @@ export const create = mutation({
       )
       .unique();
 
-    if (membership?.role !== "admin") throw new Error("Must be admin of this org");
+    if (membership?.role !== "admin")
+      throw new Error("Must be admin of this org");
 
     const now = Date.now();
     return await ctx.db.insert("assessmentTemplates", {
@@ -82,8 +81,8 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const template = await ctx.db.get(args.templateId);
     if (!template) throw new Error("Template not found");
@@ -91,13 +90,12 @@ export const update = mutation({
     const membership = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId_and_orgId", (q) =>
-        q
-          .eq("userId", identity.subject as Id<"users">)
-          .eq("orgId", template.orgId),
+        q.eq("userId", userId).eq("orgId", template.orgId),
       )
       .unique();
 
-    if (membership?.role !== "admin") throw new Error("Must be admin of this org");
+    if (membership?.role !== "admin")
+      throw new Error("Must be admin of this org");
 
     const updates: {
       name?: string;

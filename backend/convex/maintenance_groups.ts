@@ -1,10 +1,11 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 const maintenanceGroupValidator = v.object({
   _id: v.id("maintenanceGroups"),
+  _creationTime: v.number(),
   orgId: v.id("orgs"),
   name: v.string(),
   createdAt: v.number(),
@@ -35,8 +36,8 @@ export const create = mutation({
   },
   returns: v.id("maintenanceGroups"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const org = await ctx.db.get(args.orgId);
     if (!org) throw new Error("Org not found");
@@ -44,9 +45,7 @@ export const create = mutation({
     const membership = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId_and_orgId", (q) =>
-        q
-          .eq("userId", identity.subject as Id<"users">)
-          .eq("orgId", args.orgId),
+        q.eq("userId", userId).eq("orgId", args.orgId),
       )
       .unique();
 

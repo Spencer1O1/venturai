@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
 import { query } from "./_generated/server";
 
 /**
@@ -18,9 +18,9 @@ export const getCurrentUser = query({
     v.null(),
   ),
   handler: async (ctx) => {
-    const id = await ctx.auth.getUserIdentity();
-    if (!id) return null;
-    const user = await ctx.db.get(id.subject as Id<"users">);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    const user = await ctx.db.get(userId);
     if (!user) return null;
     return {
       _id: user._id,
@@ -38,10 +38,8 @@ export const isMaintenanceWorkerForAsset = query({
   args: { assetId: v.id("assets") },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    const id = await ctx.auth.getUserIdentity();
-    if (!id) return false;
-
-    const userId = id.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return false;
     const asset = await ctx.db.get(args.assetId);
     if (!asset) return false;
 
@@ -74,16 +72,10 @@ export const isMaintenanceWorkerForAsset = query({
  */
 export const getUserRoleForAsset = query({
   args: { assetId: v.id("assets") },
-  returns: v.union(
-    v.literal("admin"),
-    v.literal("maintainer"),
-    v.null(),
-  ),
+  returns: v.union(v.literal("admin"), v.literal("maintainer"), v.null()),
   handler: async (ctx, args) => {
-    const id = await ctx.auth.getUserIdentity();
-    if (!id) return null;
-
-    const userId = id.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     const asset = await ctx.db.get(args.assetId);
     if (!asset) return null;
 

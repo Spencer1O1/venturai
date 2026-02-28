@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import type { Id } from "./_generated/dataModel";
@@ -14,8 +15,8 @@ export const addMaintenanceGroupMember = mutation({
   },
   returns: v.id("maintenanceGroupMembers"),
   handler: async (ctx, args) => {
-    const caller = await ctx.auth.getUserIdentity();
-    if (!caller) throw new Error("Not authenticated");
+    const callerId = await getAuthUserId(ctx);
+    if (!callerId) throw new Error("Not authenticated");
 
     const group = await ctx.db.get(args.maintenanceGroupId);
     if (!group) throw new Error("Maintenance group not found");
@@ -23,14 +24,14 @@ export const addMaintenanceGroupMember = mutation({
     const callerMembership = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId_and_orgId", (q) =>
-        q
-          .eq("userId", caller.subject as Id<"users">)
-          .eq("orgId", group.orgId),
+        q.eq("userId", callerId).eq("orgId", group.orgId),
       )
       .unique();
 
     if (!callerMembership || callerMembership.role !== "admin") {
-      throw new Error("Must be admin of this org to add maintenance group members");
+      throw new Error(
+        "Must be admin of this org to add maintenance group members",
+      );
     }
 
     const existing = await ctx.db

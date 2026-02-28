@@ -1,6 +1,6 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import { computeRiskScoreFromLoad } from "./lib/utils";
 
@@ -19,10 +19,8 @@ export const create = mutation({
   },
   returns: v.id("maintenanceRecords"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Authentication required");
-
-    const userId = identity.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
     const asset = await ctx.db.get(args.assetId);
     if (!asset) throw new Error("Asset not found");
 
@@ -39,7 +37,9 @@ export const create = mutation({
       ctx.db
         .query("maintenanceGroupMembers")
         .withIndex("by_userId_and_maintenanceGroupId", (q) =>
-          q.eq("userId", userId).eq("maintenanceGroupId", asset.maintenanceGroupId),
+          q
+            .eq("userId", userId)
+            .eq("maintenanceGroupId", asset.maintenanceGroupId),
         )
         .unique(),
     ]);
@@ -48,7 +48,9 @@ export const create = mutation({
     const isMaintainerInGroup = mgMembership != null;
 
     if (!isAdmin && !isMaintainerInGroup) {
-      throw new Error("Must be admin of this org or maintainer in this asset's group");
+      throw new Error(
+        "Must be admin of this org or maintainer in this asset's group",
+      );
     }
 
     const now = Date.now();

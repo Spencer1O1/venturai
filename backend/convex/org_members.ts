@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import type { Id } from "./_generated/dataModel";
@@ -17,16 +18,18 @@ export const getOrgsUserIsAdminOf = query({
   args: {},
   returns: v.array(orgWithRoleValidator),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return [];
-
-    const userId = identity.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
     const memberships = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
 
-    const result: Array<{ _id: Id<"orgs">; name: string; role: "admin" | "member" }> = [];
+    const result: Array<{
+      _id: Id<"orgs">;
+      name: string;
+      role: "admin" | "member";
+    }> = [];
     for (const m of memberships) {
       if (m.role !== "admin") continue;
       const org = await ctx.db.get(m.orgId);
@@ -43,10 +46,8 @@ export const isUserAdminOfOrg = query({
   args: { orgId: v.id("orgs") },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return false;
-
-    const userId = identity.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return false;
     const membership = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId_and_orgId", (q) =>
@@ -70,13 +71,13 @@ export const addOrgMember = mutation({
   },
   returns: v.id("orgMembers"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
     const callerMembership = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId_and_orgId", (q) =>
-        q.eq("userId", identity.subject as Id<"users">).eq("orgId", args.orgId),
+        q.eq("userId", userId).eq("orgId", args.orgId),
       )
       .unique();
 

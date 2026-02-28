@@ -1,18 +1,37 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useConvexAuth } from "convex/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SignInPage() {
   const { signIn } = useAuthActions();
+  const { isLoading, isAuthenticated } = useConvexAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
   const [step, setStep] = useState<"signIn" | "signUp">("signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (isAuthenticated) {
+      router.replace(redirect);
+    }
+  }, [isLoading, isAuthenticated, router, redirect]);
+
+  if (isLoading || isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-foreground/60">Loading…</div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +44,7 @@ export default function SignInPage() {
         flow: step,
       });
       if (result.signingIn) {
-        router.push("/");
+        router.push(redirect);
         router.refresh();
       } else if (result.redirect) {
         window.location.href = result.redirect.toString();
@@ -83,7 +102,9 @@ export default function SignInPage() {
               id="password"
               name="password"
               type="password"
-              autoComplete={step === "signUp" ? "new-password" : "current-password"}
+              autoComplete={
+                step === "signUp" ? "new-password" : "current-password"
+              }
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -91,16 +112,18 @@ export default function SignInPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
             className="w-full rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {loading ? "Please wait…" : step === "signIn" ? "Sign in" : "Sign up"}
+            {loading
+              ? "Please wait…"
+              : step === "signIn"
+                ? "Sign in"
+                : "Sign up"}
           </button>
         </form>
 
