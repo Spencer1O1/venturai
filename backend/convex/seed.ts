@@ -441,6 +441,9 @@ export const seedIdeaFactoryDashboardData = mutation({
 
       if (openIds.length > 0 && index % 3 === 0) {
         const partialCloseId = openIds[0];
+        if (!partialCloseId) {
+          continue;
+        }
         const partialCloseAt = createdAt + 900;
         const recordId = await ctx.db.insert("maintenanceRecords", {
           assetId,
