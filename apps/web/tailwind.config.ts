@@ -24,6 +24,12 @@ const config: Config = {
           DEFAULT: "#1a1a24",
           border: "#2a2a3a",
         },
+        risk: {
+          low: "#22c55e",
+          medium: "#eab308",
+          high: "#ef4444",
+          critical: "#b91c1c",
+        },
       },
       keyframes: {
         wave: {

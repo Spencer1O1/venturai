@@ -1,9 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { DashboardShell } from "@/components/DashboardShell";
 
 export const metadata: Metadata = {
-  title: "Next + Expo + Convex Template",
-  description: "Starter monorepo with Turborepo and Biome",
+  title: "Venturai – Inspection Intelligence",
+  description: "AI-powered inspection intelligence for industrial equipment",
 };
 
 export default function RootLayout({
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <DashboardShell>{children}</DashboardShell>
+      </body>
     </html>
   );
 }

@@ -1,11 +1,13 @@
+@import "tailwindcss";
+
 * {
   box-sizing: border-box;
 }
 
 :root {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  color: #ffffff;
+  background: #0a0a0f;
 }
 
 body {
@@ -14,7 +16,7 @@ body {
 }
 
 a {
-  color: #2563eb;
+  color: #a78bfa;
   text-decoration: none;
 }
 
