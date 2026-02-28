@@ -31,7 +31,7 @@ import type * as assets_queries from "../assets/queries.js";
 import type * as auth from "../auth.js";
 import type * as auth_helpers from "../auth_helpers.js";
 import type * as http from "../http.js";
-import type * as lib_ai_output_validator from "../lib/ai_output_validator.js";
+import type * as lib_ai_analysis_validator from "../lib/ai_analysis_validator.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as maintenance_groups from "../maintenance_groups.js";
 import type * as maintenance_records from "../maintenance_records.js";
@@ -75,7 +75,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   auth_helpers: typeof auth_helpers;
   http: typeof http;
-  "lib/ai_output_validator": typeof lib_ai_output_validator;
+  "lib/ai_analysis_validator": typeof lib_ai_analysis_validator;
   "lib/utils": typeof lib_utils;
   maintenance_groups: typeof maintenance_groups;
   maintenance_records: typeof maintenance_records;

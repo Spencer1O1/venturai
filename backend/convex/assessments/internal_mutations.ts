@@ -1,8 +1,7 @@
 import { v } from "convex/values";
 
 import { internalMutation } from "../_generated/server";
-import type { AIOutput } from "../ai_provider_adapter/ai_output_schema";
-import { aiOutputValidator } from "../lib/ai_output_validator";
+import { aiAnalysisValidator } from "../lib/ai_analysis_validator";
 import {
   computeRiskScoreFromLoad,
   normalizeActionKey,
@@ -47,21 +46,21 @@ export const createPlaceholder = internalMutation({
 });
 
 /**
- * Finalize assessment: save aiOutput, upsert work items, recompute asset risk.
+ * Finalize assessment: save aiAnalysis, upsert work items, recompute asset risk.
  */
 export const finalizeWithAI = internalMutation({
   args: {
     assessmentId: v.id("assessments"),
     assetId: v.id("assets"),
-    aiOutput: aiOutputValidator,
+    aiAnalysis: aiAnalysisValidator,
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const output = args.aiOutput as AIOutput;
+    const output = args.aiAnalysis;
     const assessment = await ctx.db.get(args.assessmentId);
     if (!assessment) throw new Error("Assessment not found");
 
-    await ctx.db.patch(args.assessmentId, { aiOutput: output });
+    await ctx.db.patch(args.assessmentId, { aiAnalysis: output });
 
     const now = Date.now();
     const openWorkItems = await ctx.db
@@ -76,16 +75,13 @@ export const finalizeWithAI = internalMutation({
       byActionKey.set(wi.actionKey, wi);
     }
 
-    for (const action of output.actions) {
-      const priorityScore = Math.max(0, Math.min(1, action.priority));
-      const riskValue = Math.max(
-        0,
-        Math.min(100, Math.round(action.risk_value)),
-      );
+    for (const item of output.workItems) {
+      const priorityScore = Math.max(0, Math.min(1, item.priority));
+      const riskValue = Math.max(0, Math.min(100, Math.round(item.risk_value)));
 
       if (!shouldCreateWorkItem(riskValue, priorityScore)) continue;
 
-      const actionKey = normalizeActionKey(action.suggested_key);
+      const actionKey = normalizeActionKey(item.suggested_key);
       const existing = byActionKey.get(actionKey);
 
       if (existing) {
@@ -107,7 +103,7 @@ export const finalizeWithAI = internalMutation({
         const newId = await ctx.db.insert("workItems", {
           assetId: args.assetId,
           actionKey,
-          title: action.title,
+          title: item.title,
           status: "open",
           priorityScore,
           riskValue,

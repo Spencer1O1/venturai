@@ -2,7 +2,7 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { aiOutputValidator } from "./lib/ai_output_validator";
+import { aiAnalysisValidator } from "./lib/ai_analysis_validator";
 
 // Additional question for assessment templates
 const additionalQuestionValidator = v.object({
@@ -111,7 +111,7 @@ export default defineSchema({
     photoDescriptions: v.array(v.string()),
     answers: v.record(v.string(), v.union(v.string(), v.number(), v.boolean())),
     notes: v.optional(v.string()),
-    aiOutput: v.optional(aiOutputValidator),
+    aiAnalysis: v.optional(aiAnalysisValidator),
     createdAt: v.number(),
   })
     .index("by_assetId", ["assetId"])

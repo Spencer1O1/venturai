@@ -3,20 +3,24 @@ import { z } from "zod/v4";
 /**
  * Strict Zod schema for AI assessment output.
  * Fail fast on invalid/missing required fields.
- * venturai_notes.md: actions.length <= 3, overall_priority/priority/severity in 0..1, risk_value 0..100.
  */
 const recommendedPartSchema = z.object({
   name: z.string(),
   qty: z.number().int().min(0),
 });
 
-const actionSchema = z.object({
-  suggested_key: z.string(),
+const workItemSchema = z.object({
+  suggested_key: z
+    .string()
+    .regex(/^[a-z][a-z0-9_]{0,47}$/, "suggested_key must be snake_case, max 48 chars"),
+  reused_from_key: z.string().nullable(),
   title: z.string(),
   priority: z.number().min(0).max(1),
+  severity: z.number().min(0).max(1),
   risk_value: z.number().int().min(0).max(100),
-  reason: z.string().optional(),
-  description: z.string().optional(),
+  reason: z.string(),
+  description: z.string(),
+  estimated_effort: z.enum(["quick", "medium", "heavy"]),
   recommended_parts: z.array(recommendedPartSchema).optional(),
   estimated_cost: z.number().optional(),
 });
@@ -30,8 +34,11 @@ const findingSchema = z.object({
 export const aiAnalysisSchema = z.object({
   summary: z.string(),
   overall_priority: z.number().min(0).max(1),
+  clarifying_questions: z.array(z.string()),
   findings: z.array(findingSchema),
-  actions: z.array(actionSchema).max(3, "actions must have at most 3 items"),
+  workItems: z
+    .array(workItemSchema)
+    .max(3, "workItems must have at most 3 items"),
 });
 
 export type AIAnalysis = z.infer<typeof aiAnalysisSchema>;

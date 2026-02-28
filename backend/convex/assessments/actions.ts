@@ -5,8 +5,8 @@
  *
  * Flow: 1) Create assessment placeholder (mutation), 2) Load asset/template/open work item keys
  * (query) + resolve photo storage IDs to URLs (query), 3) Call vision LLM with images + metadata,
- * 4) Validate AI JSON (zod), 5) Finalize: save aiOutput, upsert work items per dedupe policy,
- * recompute asset riskLoad/riskScore (mutation), 6) Return aiOutput + updated risk fields.
+ * 4) Validate AI JSON (zod), 5) Finalize: save aiAnalysis, upsert work items per dedupe policy,
+ * recompute asset riskLoad/riskScore (mutation), 6) Return aiAnalysis + updated risk fields.
  */
 
 import { v } from "convex/values";
@@ -27,7 +27,7 @@ const iq = requireInternal("assessments/internal_queries");
 import { action } from "../_generated/server";
 import { ANALYZERS } from "../ai_provider_adapter";
 import { analyze } from "../ai_provider_adapter/analyze";
-import { aiOutputValidator } from "../lib/ai_output_validator";
+import { aiAnalysisValidator } from "../lib/ai_analysis_validator";
 
 export const createWithAI = action({
   args: {
@@ -39,7 +39,7 @@ export const createWithAI = action({
     notes: v.optional(v.string()),
   },
   returns: v.object({
-    aiOutput: aiOutputValidator,
+    aiAnalysis: aiAnalysisValidator,
     riskLoad: v.number(),
     riskScore: v.number(),
     lastAssessedAt: v.number(),
@@ -110,14 +110,14 @@ export const createWithAI = action({
       existingOpenActionKeys: context.existingOpenActionKeys,
     };
 
-    const { result: aiOutput } = await analyze(ANALYZERS.OpenAI, payload);
+    const { result: aiAnalysis } = await analyze(ANALYZERS.OpenAI, payload);
 
     await ctx.runMutation(
       im.finalizeWithAI as Parameters<typeof ctx.runMutation>[0],
       {
         assessmentId,
         assetId: args.assetId,
-        aiOutput,
+        aiAnalysis,
       },
     );
 
@@ -130,7 +130,7 @@ export const createWithAI = action({
     if (!asset) throw new Error("Asset not found after finalize");
 
     return {
-      aiOutput,
+      aiAnalysis,
       riskLoad: asset.riskLoad,
       riskScore: asset.riskScore,
       lastAssessedAt: asset.lastAssessedAt ?? Date.now(),

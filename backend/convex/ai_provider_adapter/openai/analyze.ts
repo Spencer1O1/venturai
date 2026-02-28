@@ -4,43 +4,33 @@ import type { AIAnalyzer, AnalyzePayload } from "../types";
 import { AIAnalysisSchema } from "./schemas/analysis";
 
 function buildSystemPrompt(): string {
-  return `
-  You are an industrial maintenance assessment AI.
-  TASK:
-  Analyze the attached images and metadata.
-  Return exactly ONE JSON object conforming to the schema.
-
-  UNCERTAINTY POLICY:
-  - If evidence is insufficient, do NOT guess.
-  - Use null where appropriate.
-  - Set needs_clarification = true.
-  - Add specific clarifying_questions.
-  
-  HARD RULES:
-  - Output JSON ONLY (no markdown, no prose).
-  - Do not invent specifics that are not visible or not provided. If unsure, use null and explain briefly in "evidence_summary".
-  - MAX 3 actions in "actions" array. If nothing actionable, return [].
-  - Reuse keys from "existing_open_action_keys" when the new action is substantially the same issue.
-  - suggested_key MUST be snake_case matching ^[a-z][a-z0-9_]{0,47}$.
-  - overall_priority, priority, severity are numbers in [0.0, 1.0].
-  - risk_value is integer in [0, 100].
-
-  SCORING RUBRIC (be consistent):
-  - severity (0..1): consequence if it fails (safety, downtime, cost).
-  - priority (0..1): urgency/timeline (how soon it should be addressed).
-  - overall_priority (0..1): max(priority, severity) adjusted upward if evidence is strong and hazard is present.
-  - risk_value (0..100): round(overall_priority * 100).
-
-  KEY REUSE RULES:
-  - Prefer an existing key (EXISTING_OPEN_ACTION_KEYS) if the core issue matches (same component + same failure mode), even if minor details differ.
-  - If multiple existing keys fit, choose the closest match and mention which in "reused_from_key".
-  - Only create a new key if none match.
-
-  EVIDENCE RULES:
-  - Every action must include "evidence" with what was observed in the image(s) and/or answers/notes.
-  - If the intent is "problem", prioritize the most likely failure causing the reported issue.
-  - If routine, prioritize safety hazards and critical wear first.
-  `;
+  return [
+    "You are an industrial maintenance assessment AI.",
+    "TASK: Analyze the attached images of assets and metadata. Return exactly ONE JSON object conforming to the schema.",
+    "",
+    "UNCERTAINTY POLICY:",
+    "- If evidence is insufficient, do NOT guess. Add specific clarifying_questions (strings).",
+    "- If confident, return clarifying_questions: [].",
+    "",
+    "HARD RULES:",
+    "- Do not invent specifics that are not visible or not provided.",
+    "- MAX 3 work items in the workItems array. If nothing actionable, return [].",
+    "- workItems can be empty array; findings can be empty array too. Do not invent findings when workItems is empty.",
+    "- Reuse keys from EXISTING_OPEN_ACTION_KEYS when the work item is substantially the same issue. Set reused_from_key to that key, or null if new.",
+    "- suggested_key must match ^[a-z][a-z0-9_]{0,47}$ (max 48 chars).",
+    "- overall_priority, priority, severity: numbers in [0.0, 1.0].",
+    "- risk_value: integer in [0, 100].",
+    "- estimated_effort: one of quick, medium, heavy.",
+    "",
+    "SCORING RUBRIC:",
+    "- severity (0..1): impact if unaddressed (safety, downtime, cost). Use in findings and workItems.",
+    "- priority (0..1): urgency/time-to-act. Use in workItems.",
+    "- workItems[].risk_value (0..100): integer round(max(priority, severity) * 100).",
+    "- overall_priority (0..1): max of max(priority, severity) across workItems; if workItems is empty, derive from findings severity (or use 0).",
+    "",
+    "KEY REUSE: Prefer existing keys if the core issue matches. Only create new key if none match.",
+    "EVIDENCE: Every work item needs reason/description. If intent is problem, prioritize most likely failure. If routine, prioritize safety and critical wear first.",
+  ].join("\n");
 }
 
 function buildUserMessage(payload: AnalyzePayload): string {
@@ -86,11 +76,13 @@ function buildUserMessage(payload: AnalyzePayload): string {
   }
 
   lines.push("EXISTING_OPEN_ACTION_KEYS:");
-  lines.push(
-    existingOpenActionKeys.length
-      ? existingOpenActionKeys.join(", ")
-      : "(none)",
-  );
+  if (existingOpenActionKeys.length) {
+    for (const key of existingOpenActionKeys) {
+      lines.push(`- ${key}`);
+    }
+  } else {
+    lines.push("(none)");
+  }
   lines.push("");
 
   return lines.join("\n");

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 
-import { aiOutputValidator } from "../lib/ai_output_validator";
+import { aiAnalysisValidator } from "../lib/ai_analysis_validator";
 
 /** Validator for assessment documents (used by queries return types). */
 export const assessmentDocValidator = v.object({
@@ -16,6 +16,6 @@ export const assessmentDocValidator = v.object({
   photoDescriptions: v.array(v.string()),
   answers: v.record(v.string(), v.union(v.string(), v.number(), v.boolean())),
   notes: v.optional(v.string()),
-  aiOutput: v.optional(aiOutputValidator),
+  aiAnalysis: v.optional(aiAnalysisValidator),
   createdAt: v.number(),
 });
