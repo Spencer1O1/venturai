@@ -11,6 +11,8 @@ import {
   View,
 } from "react-native";
 
+import { theme } from "../lib/theme";
+
 export default function SignInScreen() {
   const { signIn } = useAuthActions();
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -31,7 +33,7 @@ export default function SignInScreen() {
   if (isLoading || isAuthenticated) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#ffffff" />
+        <ActivityIndicator size="large" color={theme.accent} />
         <Text style={styles.hint}>Loading…</Text>
       </View>
     );
@@ -70,7 +72,7 @@ export default function SignInScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={theme.textMuted}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -80,7 +82,7 @@ export default function SignInScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={theme.textMuted}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -126,58 +128,63 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
+    backgroundColor: theme.background,
   },
   container: {
     flex: 1,
     padding: 24,
     justifyContent: "center",
+    backgroundColor: theme.background,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#ffffff",
+    color: theme.text,
     marginBottom: 8,
+    letterSpacing: 2,
   },
   subtitle: {
     fontSize: 16,
-    color: "#94a3b8",
+    color: theme.textMuted,
     marginBottom: 32,
   },
   input: {
-    backgroundColor: "#1e293b",
+    backgroundColor: theme.backgroundElevated,
     borderWidth: 1,
-    borderColor: "#334155",
-    borderRadius: 8,
+    borderColor: theme.border,
+    borderRadius: 10,
     padding: 16,
     fontSize: 16,
-    color: "#ffffff",
+    color: theme.text,
     marginBottom: 16,
   },
   error: {
-    color: "#f87171",
+    color: theme.error,
     fontSize: 14,
     marginBottom: 16,
   },
   button: {
-    backgroundColor: "#2563eb",
-    padding: 16,
-    borderRadius: 8,
+    alignSelf: "stretch",
+    backgroundColor: theme.buttonPrimary,
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
     alignItems: "center",
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: theme.background,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
   },
   toggle: {
     marginTop: 24,
     alignItems: "center",
   },
   toggleText: {
-    color: "#60a5fa",
+    color: theme.accent,
     fontSize: 14,
   },
   back: {
@@ -185,12 +192,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backText: {
-    color: "#94a3b8",
+    color: theme.textMuted,
     fontSize: 14,
   },
   hint: {
     marginTop: 12,
-    color: "#94a3b8",
+    color: theme.textMuted,
     fontSize: 14,
   },
 });

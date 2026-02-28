@@ -27,7 +27,7 @@ export default function SignInPage() {
 
   if (isLoading || isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <div className="text-foreground/60">Loading…</div>
       </div>
     );
@@ -57,77 +57,78 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center">
-          <Link
-            href="/"
-            className="text-2xl font-semibold tracking-tight text-foreground"
-          >
-            Venturai
-          </Link>
-          <p className="mt-2 text-sm text-foreground/60">
-            Inspection intelligence for industrial equipment
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-foreground"
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+      <div className="w-full max-w-sm rounded-lg border border-card-border bg-card p-8 shadow-[0_0_40px_rgba(0,212,255,0.15)]">
+        <div className="space-y-8">
+          <div className="text-center">
+            <Link
+              href="/"
+              className="font-heading text-2xl font-bold uppercase tracking-tight text-primary"
             >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-card-border bg-card px-4 py-2 text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-foreground"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete={
-                step === "signUp" ? "new-password" : "current-password"
-              }
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-card-border bg-card px-4 py-2 text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            />
+              VENTURAI
+            </Link>
+            <p className="mt-2 text-sm text-foreground/80">
+              Inspection intelligence for industrial equipment
+            </p>
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-card-border bg-background px-4 py-2 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete={
+                  step === "signUp" ? "new-password" : "current-password"
+                }
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-card-border bg-background px-4 py-2 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {loading
-              ? "Please wait…"
-              : step === "signIn"
-                ? "Sign in"
-                : "Sign up"}
-          </button>
-        </form>
+            {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <p className="text-center text-sm text-foreground/60">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition hover:bg-primary-light disabled:opacity-50"
+            >
+              {loading
+                ? "Please wait…"
+                : step === "signIn"
+                  ? "Sign in"
+                  : "Sign up"}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-foreground/80">
           {step === "signIn" ? (
             <>
               Don&apos;t have an account?{" "}
@@ -151,7 +152,8 @@ export default function SignInPage() {
               </button>
             </>
           )}
-        </p>
+          </p>
+        </div>
       </div>
     </div>
   );

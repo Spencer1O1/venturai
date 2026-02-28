@@ -1,6 +1,9 @@
 import "./globals.css";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import type { Metadata } from "next";
+import { Space_Grotesk } from "next/font/google";
+
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-heading" });
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +18,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
       <head>
         <script
           // biome-ignore lint/security/noDangerouslySetInnerHtml: Used for theme purposes
@@ -23,8 +26,7 @@ export default async function RootLayout({
             __html: `
               (function() {
                 var s = localStorage.getItem('venturai-theme');
-                var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var dark = s === 'dark' || (!s && d);
+                var dark = s !== 'light';
                 if (dark) document.documentElement.classList.add('dark');
                 else document.documentElement.classList.remove('dark');
               })();

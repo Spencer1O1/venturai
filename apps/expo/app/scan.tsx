@@ -15,6 +15,7 @@ import {
   startNfcUrlReader,
   stopNfcUrlReader,
 } from "../lib/nfc";
+import { theme } from "../lib/theme";
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -83,44 +84,58 @@ export default function ScanScreen() {
   if (status === "unsupported") {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>NFC not available</Text>
-        <Text style={styles.hint}>
-          This device does not support NFC or it is disabled.
-        </Text>
-        <Pressable style={styles.button} onPress={() => router.back()}>
-          <Text style={styles.buttonText}>Back</Text>
-        </Pressable>
+        <View style={styles.buttonRow}>
+          <Text style={styles.title}>NFC not available</Text>
+          <Text style={styles.hint}>
+            This device does not support NFC or it is disabled.
+          </Text>
+          <Pressable
+            style={[styles.button, styles.buttonPrimary]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.buttonTextPrimary}>Back</Text>
+          </Pressable>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Scan NFC Tag</Text>
-      <Text style={styles.hint}>
-        {status === "scanning" || status === "ready"
-          ? "Hold your phone near the NFC tag to open the asset."
-          : status === "error"
-            ? "Could not read the tag. Hold it steady and try again."
-            : "Checking NFC..."}
-      </Text>
-      {(status === "scanning" || status === "checking") && (
-        <ActivityIndicator size="large" style={styles.spinner} />
-      )}
-      {status === "error" && (
-        <Pressable style={styles.button} onPress={startReader}>
-          <Text style={styles.buttonText}>Retry</Text>
+      <View style={styles.buttonRow}>
+        <Text style={styles.title}>Scan Data Dot</Text>
+        <Text style={styles.hint}>
+          {status === "scanning" || status === "ready"
+            ? "Hold your phone near the Data Dot to open the asset."
+            : status === "error"
+              ? "Could not read the tag. Hold it steady and try again."
+              : "Checking NFC..."}
+        </Text>
+        {(status === "scanning" || status === "checking") && (
+          <ActivityIndicator
+            size="large"
+            color={theme.accent}
+            style={styles.spinner}
+          />
+        )}
+        {status === "error" && (
+          <Pressable
+            style={[styles.button, styles.buttonPrimary]}
+            onPress={startReader}
+          >
+            <Text style={styles.buttonTextPrimary}>Retry</Text>
+          </Pressable>
+        )}
+        <Pressable
+          style={[styles.button, styles.buttonSecondary]}
+          onPress={() => {
+            cancelNfcScan();
+            router.back();
+          }}
+        >
+          <Text style={styles.buttonTextSecondary}>Cancel</Text>
         </Pressable>
-      )}
-      <Pressable
-        style={[styles.button, styles.buttonSecondary]}
-        onPress={() => {
-          cancelNfcScan();
-          router.back();
-        }}
-      >
-        <Text style={styles.buttonText}>Cancel</Text>
-      </Pressable>
+      </View>
     </View>
   );
 }
@@ -131,22 +146,46 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
+    backgroundColor: theme.background,
   },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: theme.text,
+  },
   hint: {
     fontSize: 14,
-    color: "#64748b",
+    color: theme.textMuted,
     textAlign: "center",
     marginBottom: 24,
   },
   spinner: { marginVertical: 24 },
+  buttonRow: { width: "100%", maxWidth: 320 },
   button: {
-    backgroundColor: "#2563eb",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    alignSelf: "stretch",
+    paddingVertical: theme.buttonPaddingVertical,
+    paddingHorizontal: theme.buttonPaddingHorizontal,
+    borderRadius: theme.buttonBorderRadius,
+    alignItems: "center",
     marginBottom: 12,
   },
-  buttonSecondary: { backgroundColor: "#64748b" },
-  buttonText: { color: "#fff", fontSize: 16 },
+  buttonPrimary: {
+    backgroundColor: theme.buttonPrimary,
+  },
+  buttonSecondary: {
+    backgroundColor: theme.buttonSecondary,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  buttonTextPrimary: {
+    color: theme.background,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
+  buttonTextSecondary: {
+    color: theme.text,
+    fontSize: theme.buttonFontSize,
+    fontWeight: theme.buttonFontWeight,
+  },
 });

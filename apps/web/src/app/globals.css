@@ -4,29 +4,35 @@
   box-sizing: border-box;
 }
 
-/* Light mode (default) */
+/* Light mode (default) - VENTURAI design system */
 :root {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-border: #e2e8f0;
-  --primary: #ea580c;
-  --primary-light: #f97316;
-  --link: #ea580c;
+  --background: #f0f4f8;
+  --foreground: #1a1f2e;
+  --primary: #00b4d8;
+  --primary-foreground: #ffffff;
+  --primary-light: #48cae4;
+  --accent: #00d4ff;
+  --link: #0096c7;
+  --muted: #64748b;
   color: var(--foreground);
   background: var(--background);
 }
 
-/* Dark mode */
+/* Dark mode - VENTURAI aesthetic */
 .dark {
-  --background: #0a0a0f;
-  --foreground: #ffffff;
-  --card: #1a1a24;
-  --card-border: #2a2a3a;
-  --primary: #fb923c;
-  --primary-light: #fdba74;
-  --link: #fb923c;
+  --background: #0d1117;
+  --foreground: #e6edf3;
+  --card: #161b22;
+  --card-border: #21262d;
+  --primary: #00d4ff;
+  --primary-foreground: #0d1117;
+  --primary-light: #48cae4;
+  --accent: #00ffff;
+  --accent-glow: rgba(0, 212, 255, 0.35);
+  --link: #00d4ff;
+  --muted: #8b949e;
+  --metallic: #c0c0c0;
   color: var(--foreground);
   background: var(--background);
 }
@@ -64,7 +70,7 @@ a:hover {
 }
 
 .dark .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 212, 255, 0.08);
 }
 
 .theme-toggle input {

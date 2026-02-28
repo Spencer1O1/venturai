@@ -26,7 +26,9 @@ export function Sidebar() {
     <aside className="flex w-56 flex-col border-r border-card-border bg-card p-4">
       <div className="mb-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-semibold tracking-tight text-foreground">Venturai</span>
+          <span className="font-heading text-xl font-bold tracking-tight text-primary shadow-[0_0_12px_var(--primary)] ring-primary/30 ring-1 ring-inset">
+            VENTURAI
+          </span>
         </Link>
         <ThemeToggle />
       </div>
@@ -37,10 +39,10 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-primary/20 text-primary"
-                  : "text-foreground/70 hover:bg-card-border/50 hover:text-foreground"
+                  ? "border-l-2 border-l-primary bg-primary/15 text-primary"
+                  : "border-l-2 border-l-transparent text-foreground/70 hover:bg-card-border/50 hover:text-foreground"
               }`}
             >
               {label}
@@ -51,7 +53,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground/70 hover:bg-card-border/50 hover:text-foreground"
+            className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground/70 transition-all hover:bg-card-border/50 hover:text-foreground"
           >
             Sign out
           </button>

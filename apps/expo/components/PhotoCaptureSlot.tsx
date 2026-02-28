@@ -9,6 +9,8 @@ import {
   View,
 } from "react-native";
 
+import { theme } from "../lib/theme";
+
 type Props = {
   label: string;
   onCapture: (uri: string) => void;
@@ -100,24 +102,28 @@ export function PhotoCaptureSlot({
 
 const styles = StyleSheet.create({
   slot: { marginBottom: 16 },
-  label: { fontSize: 14, marginBottom: 8 },
+  label: { fontSize: 14, marginBottom: 8, color: theme.text },
   captureButton: {
-    backgroundColor: "#e2e8f0",
+    backgroundColor: theme.backgroundElevated,
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#cbd5e1",
+    borderColor: theme.border,
     borderStyle: "dashed",
   },
   captureButtonDisabled: { opacity: 0.7 },
-  captureButtonText: { fontSize: 15, color: "#475569", fontWeight: "500" },
+  captureButtonText: {
+    fontSize: 15,
+    color: theme.textMuted,
+    fontWeight: "500",
+  },
   thumbnailRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   thumbnail: {
     width: 80,
     height: 80,
     borderRadius: 8,
-    backgroundColor: "#f1f5f9",
+    backgroundColor: theme.backgroundCard,
   },
   actions: { flex: 1, gap: 8 },
   button: {
@@ -126,8 +132,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignSelf: "flex-start",
   },
-  buttonSecondary: { backgroundColor: "#e2e8f0" },
-  buttonOutline: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#94a3b8" },
-  buttonText: { fontSize: 14, fontWeight: "500", color: "#334155" },
-  buttonTextSecondary: { fontSize: 14, color: "#64748b" },
+  buttonSecondary: {
+    backgroundColor: theme.backgroundElevated,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  buttonOutline: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  buttonText: { fontSize: 14, fontWeight: "500", color: theme.text },
+  buttonTextSecondary: { fontSize: 14, color: theme.textMuted },
 });

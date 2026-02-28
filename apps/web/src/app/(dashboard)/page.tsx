@@ -10,13 +10,17 @@ export default function DashboardPage() {
     <div className="flex flex-1 flex-col gap-6 p-8 lg:flex-row">
       <div className="order-2 min-w-0 flex-1 lg:order-1">
         <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-foreground">Assets</h1>
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-primary">
+            VENTURAI
+          </h1>
+          <p className="mt-1 text-lg font-medium text-primary/90">Dashboard</p>
+          <h2 className="mt-4 text-xl font-semibold text-foreground">Assets</h2>
           <p className="mt-1 text-sm text-foreground/60">
             Sorted by risk. Tap an asset to view details or open work items.
           </p>
         </header>
 
-        <div className="overflow-hidden rounded-xl border border-card-border bg-card">
+        <div className="overflow-hidden rounded-xl border border-card-border bg-card shadow-[0_0_20px_rgba(0,212,255,0.06)]">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-card-border bg-card/80">
@@ -44,7 +48,7 @@ export default function DashboardPage() {
                   <td className="px-6 py-4">
                     <Link
                       href={`/assets/${asset.id}`}
-                      className="font-medium text-foreground hover:text-primary"
+                      className="font-medium text-primary transition-colors hover:text-primary-light"
                     >
                       {asset.name}
                     </Link>
@@ -59,7 +63,7 @@ export default function DashboardPage() {
                   <td className="px-6 py-4">
                     <Link
                       href={`/work-items?asset=${asset.id}`}
-                      className="text-primary hover:underline"
+                      className="text-primary transition-colors hover:text-primary-light hover:underline"
                     >
                       View work items →
                     </Link>

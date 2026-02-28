@@ -31,6 +31,30 @@ export const getCurrentUser = query({
 });
 
 /**
+ * Check if the current user is a member of the asset's organization (any role).
+ * True if: user has orgMembers entry for the asset's org (owner, admin, or member).
+ */
+export const isMemberOfAssetOrg = query({
+  args: { assetId: v.id("assets") },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return false;
+    const asset = await ctx.db.get(args.assetId);
+    if (!asset) return false;
+
+    const orgMembership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId_and_orgId", (q) =>
+        q.eq("userId", userId).eq("orgId", asset.orgId),
+      )
+      .unique();
+
+    return orgMembership !== null;
+  },
+});
+
+/**
  * Check if the current user can access maintenance features for an asset.
  * True if: user is admin of the asset's org, or user is in the asset's maintenance group.
  */
