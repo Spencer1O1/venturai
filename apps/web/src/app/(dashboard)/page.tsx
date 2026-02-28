@@ -1,5 +1,10 @@
 "use client";
 
+import { RiskHeatmapPill } from "@/components/RiskHeatmapCell";
+import { useSelectedOrg } from "@/hooks/useSelectedOrg";
+import { getRiskTier } from "@/lib/risk";
+import { api } from "@venturai/backend";
+import type { Id } from "@venturai/backend/dataModel";
 import { api } from "@venturai/backend";
 import type { Id } from "@venturai/backend/dataModel";
 //import { DataQueryPanel } from "@/components/DataQueryPanel";
@@ -7,6 +12,49 @@ import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
 import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { useQuery } from "convex/react";
 import Link from "next/link";
+
+function ScanIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+      <path d="M7 12h10" />
+    </svg>
+  );
+}
+function ReportIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+function CalendarIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+function RefreshIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+      <path d="M16 21h5v-5" />
+    </svg>
+  );
+}
 
 export default function DashboardPage() {
   const { orgId, orgs } = useSelectedOrg();
@@ -26,6 +74,41 @@ export default function DashboardPage() {
       (openCountByAsset.get(wi.assetId) ?? 0) + 1,
     );
   }
+
+  const highRiskItems = (openWorkItems ?? []).slice(0, 5);
+  const totalAssets = assets?.length ?? 0;
+  const issuesFound = openWorkItems?.length ?? 0;
+  const issuesRate = totalAssets > 0 ? Math.round((issuesFound / totalAssets) * 100) : 0;
+  const highRiskCount = assets?.filter((a) => a.riskScore > 75).length ?? 0;
+  const avgRiskScoreNum = totalAssets > 0
+    ? (assets ?? []).reduce((s, a) => s + a.riskScore, 0) / totalAssets
+    : 0;
+  const avgRiskScore = avgRiskScoreNum.toFixed(1);
+
+  const riskDistribution = (assets ?? []).reduce(
+    (acc, a) => {
+      const tier = getRiskTier(a.riskScore);
+      acc[tier] = (acc[tier] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+  const noIssuesCount = riskDistribution.low ?? 0;
+  const lowCount = riskDistribution.low ?? 0;
+  const mediumCount = riskDistribution.medium ?? 0;
+  const highCount = riskDistribution.high ?? 0;
+  const criticalCount = riskDistribution.critical ?? 0;
+
+  const pieSegments = [
+    { label: "No Issues", value: noIssuesCount, color: "#6E7681", pct: totalAssets ? (noIssuesCount / totalAssets) * 100 : 93 },
+    { label: "Medium", value: mediumCount, color: "#FBBF24", pct: totalAssets ? (mediumCount / totalAssets) * 100 : 0 },
+    { label: "High Risk", value: highCount + criticalCount, color: "#F87171", pct: totalAssets ? ((highCount + criticalCount) / totalAssets) * 100 : 0 },
+  ].filter((s) => s.value > 0);
+
+  const operationalCount = lowCount;
+  const maintenanceCount = mediumCount;
+  const criticalStatusCount = highCount + criticalCount;
+  const offlineCount = 0;
 
   if (orgs === undefined) {
     return (
@@ -116,20 +199,125 @@ export default function DashboardPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
+              {highRiskItems.length === 0 && (
+                <li className="text-sm text-foreground/60">No recent activity</li>
+              )}
+            </ul>
+          </div>
         </div>
 
-        {assets?.length === 0 && (
-          <p className="mt-4 text-center text-foreground/60">
-            No assets yet. Add assets from your organization.
-          </p>
-        )}
-      </div>
+        {/* Right column */}
+        <div className="flex flex-col gap-6">
+          {/* Risk Distribution */}
+          <div className="rounded-xl border border-card-border bg-card p-5">
+            <h2 className="mb-4 font-semibold text-foreground">Risk Distribution</h2>
+            <div className="flex items-center justify-center gap-4">
+              <div className="relative h-40 w-40 shrink-0">
+                <svg viewBox="0 0 36 36" className="h-full w-full -rotate-90">
+                  {pieSegments.length === 0 ? (
+                    <circle cx="18" cy="18" r="16" fill="#64748b" opacity="0.3" />
+                  ) : (
+                    pieSegments.map((seg, i) => {
+                      const offset = pieSegments
+                        .slice(0, i)
+                        .reduce((s, p) => s + (p.pct / 100) * 100, 0);
+                      const dash = `${seg.pct} ${100 - seg.pct}`;
+                      return (
+                        <circle
+                          key={seg.label}
+                          cx="18"
+                          cy="18"
+                          r="16"
+                          fill="none"
+                          stroke={seg.color}
+                          strokeWidth="4"
+                          strokeDasharray={dash}
+                          strokeDashoffset={-offset}
+                        />
+                      );
+                    })
+                  )}
+                </svg>
+              </div>
+              <div className="flex flex-col gap-1 text-sm">
+                {pieSegments.map((s) => (
+                  <div key={s.label} className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                    <span className="text-foreground/80">{s.label}</span>
+                    <span className="text-foreground/60">{s.pct.toFixed(1)}%</span>
+                  </div>
+                ))}
+                {pieSegments.length === 0 && (
+                  <p className="text-foreground/60">No data</p>
+                )}
+              </div>
+            </div>
+          </div>
 
-      {/* <div className="order-1 shrink-0 lg:order-2">
-        <DataQueryPanel />
-      </div> */}
+          {/* Asset Status */}
+          <div className="rounded-xl border border-card-border bg-card p-5">
+            <h2 className="mb-4 font-semibold text-foreground">Asset Status</h2>
+            <ul className="space-y-3">
+              <li className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-risk-low" />
+                  Operational
+                </span>
+                <span className="font-medium text-foreground">{operationalCount}</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-risk-high" />
+                  Maintenance
+                </span>
+                <span className="font-medium text-foreground">{maintenanceCount}</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-risk-critical" />
+                  Critical
+                </span>
+                <span className="font-medium text-foreground">{criticalStatusCount}</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-foreground/30" />
+                  Offline
+                </span>
+                <span className="font-medium text-foreground">{offlineCount}</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="rounded-xl border border-card-border bg-card p-5">
+            <h2 className="mb-4 font-semibold text-foreground">Quick Actions</h2>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/assets"
+                className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-medium text-white transition-colors hover:bg-primary/90"
+              >
+                <ScanIcon />
+                Start New Scan
+              </Link>
+              <button
+                type="button"
+                className="flex items-center justify-center gap-2 rounded-lg border border-primary px-4 py-3 font-medium text-primary transition-colors hover:bg-primary/10"
+              >
+                <ReportIcon />
+                Export Report
+              </button>
+              <button
+                type="button"
+                className="flex items-center justify-center gap-2 rounded-lg border border-primary px-4 py-3 font-medium text-primary transition-colors hover:bg-primary/10"
+              >
+                <CalendarIcon />
+                Schedule Maintenance
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

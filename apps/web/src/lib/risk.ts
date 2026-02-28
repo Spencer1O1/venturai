@@ -27,14 +27,14 @@ export const RISK_TIER_CLASSES = {
   critical: "bg-risk-critical/20 text-risk-critical border-risk-critical/40",
 } as const;
 
-/** Heatmap colors (inline styles): green → yellow → orange → red */
+/** Heatmap colors (inline styles): theme success → warning → orange → error */
 export const RISK_HEATMAP_STYLES = {
   low: {
-    backgroundColor: "#22c55e",
+    backgroundColor: "#00D68F",
     color: "#052e16",
   },
   medium: {
-    backgroundColor: "#eab308",
+    backgroundColor: "#FBBF24",
     color: "#422006",
   },
   high: {
@@ -42,7 +42,7 @@ export const RISK_HEATMAP_STYLES = {
     color: "#ffffff",
   },
   critical: {
-    backgroundColor: "#ef4444",
+    backgroundColor: "#F87171",
     color: "#ffffff",
   },
 } as const;

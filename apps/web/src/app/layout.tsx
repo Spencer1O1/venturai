@@ -10,6 +10,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Venturai – Inspection Intelligence",
   description: "AI-powered inspection intelligence for industrial equipment",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default async function RootLayout({
