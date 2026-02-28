@@ -22,9 +22,33 @@ const NFC_TECH_FILTER_XML = `<?xml version="1.0" encoding="utf-8"?>
 </resources>
 `;
 
+// High priority so we get NFC intents before Chrome intercepts https URLs
 const NDEF_DISCOVERED_FILTER = {
+  $: { "android:priority": "999" },
   action: [{ $: { "android:name": "android.nfc.action.NDEF_DISCOVERED" } }],
-  category: [{ $: { "android:name": "android.intent.category.DEFAULT" } }],
+  category: [
+    { $: { "android:name": "android.intent.category.DEFAULT" } },
+    { $: { "android:name": "android.intent.category.BROWSABLE" } },
+  ],
+  data: [
+    {
+      $: {
+        "android:scheme": "https",
+        "android:host": "venturai.app",
+        "android:pathPrefix": "/a/",
+      },
+    },
+  ],
+};
+
+// App Links: when assetlinks.json is verified, Android opens app for venturai.app/a/* links
+const APP_LINKS_VIEW_FILTER = {
+  $: { "android:autoVerify": "true" },
+  action: [{ $: { "android:name": "android.intent.action.VIEW" } }],
+  category: [
+    { $: { "android:name": "android.intent.category.DEFAULT" } },
+    { $: { "android:name": "android.intent.category.BROWSABLE" } },
+  ],
   data: [
     {
       $: {
@@ -86,6 +110,7 @@ function withNfcIntentFilter(c) {
       mainActivity["intent-filter"] = [];
     }
     mainActivity["intent-filter"].push(NDEF_DISCOVERED_FILTER);
+    mainActivity["intent-filter"].push(APP_LINKS_VIEW_FILTER);
     mainActivity["intent-filter"].push(TECH_DISCOVERED_FILTER);
 
     if (!Array.isArray(mainActivity["meta-data"])) {
