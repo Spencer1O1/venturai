@@ -1,4 +1,4 @@
-import { DataQueryPanel } from "@/components/DataQueryPanel";
+// import { DataQueryPanel } from "@/components/DataQueryPanel";
 import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
 import { MOCK_ASSETS } from "@/lib/mockData";
 import Link from "next/link";
@@ -71,9 +71,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="order-1 shrink-0 lg:order-2">
+      {/* <div className="order-1 shrink-0 lg:order-2">
         <DataQueryPanel />
-      </div>
+      </div> */}
     </div>
   );
 }
