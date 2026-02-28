@@ -4,9 +4,6 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-/** Placeholder for "Scan NFC Tag" when no real NFC - use a real asset ID from seed for testing */
-const DEMO_ASSET_ID = "demo";
-
 export default function HomeScreen() {
   const router = useRouter();
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -23,17 +20,12 @@ export default function HomeScreen() {
 
       <Pressable
         style={styles.scanButton}
-        onPress={() =>
-          router.push({
-            pathname: "/a/[id]",
-            params: { id: DEMO_ASSET_ID },
-          })
-        }
+        onPress={() => router.push("/scan" as never)}
       >
         <Text style={styles.scanText}>Scan NFC Tag</Text>
       </Pressable>
       <Text style={styles.hint}>
-        For now, this opens a demo asset. Real NFC deep links to /a/[id].
+        Hold your phone near an asset tag to open its dashboard.
       </Text>
 
       {isAuthenticated ? (

@@ -1,10 +1,12 @@
 import { api } from "@venturai/backend";
 import type { Id } from "@venturai/backend/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,17 +15,81 @@ import {
   View,
 } from "react-native";
 
-type Step = "photo" | "suggesting" | "edit" | "creating" | "template" | "done";
+import {
+  assetUrl,
+  cancelNfcScan,
+  initNfc,
+  waitForNfcTag,
+  writeUrlToNfcTag,
+} from "../../lib/nfc";
+import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
+
+type Step =
+  | "nfc"
+  | "suggesting"
+  | "edit"
+  | "creating"
+  | "template"
+  | "write"
+  | "done";
+
+function NfcWriteStep({
+  assetId,
+  onSuccess,
+}: {
+  assetId: string;
+  onSuccess: () => void;
+}) {
+  const [status, setStatus] = useState<"waiting" | "success" | "error">("waiting");
+  const url = assetUrl(assetId);
+
+  const attemptWrite = useCallback(async () => {
+    setStatus("waiting");
+    const ok = await writeUrlToNfcTag(url);
+    setStatus(ok ? "success" : "error");
+    if (ok) onSuccess();
+  }, [url, onSuccess]);
+
+  useEffect(() => {
+    attemptWrite();
+  }, [attemptWrite]);
+
+  if (status === "success") {
+    return null; // Parent will show done step
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Write to NFC tag</Text>
+      <Text style={styles.subtitle}>
+        {status === "error"
+          ? "Could not write to the tag. Hold the tag steady and try again."
+          : "Hold your phone near the NFC tag to write the asset URL."}
+      </Text>
+      {status === "waiting" && (
+        <ActivityIndicator size="large" style={styles.nfcSpinner} />
+      )}
+      {status === "error" && (
+        <Pressable style={styles.button} onPress={attemptWrite}>
+          <Text style={styles.buttonText}>Retry</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
 
 /**
  * Register a new asset.
- * Flow: 1) Take photo 2) AI suggests details 3) User edits 4) Create 5) Optional template
+ * Flow: 1) Scan NFC tag 2) Take photo (camera opens immediately after scan)
+ * 3) AI suggests details 4) User edits 5) Create 6) Optional template
  * After creation, write venturai.app/a/<assetId> to the NFC tag.
  */
 export default function RegisterAssetScreen() {
   const router = useRouter();
+  const nfcAbortedRef = useRef(false);
 
-  const [step, setStep] = useState<Step>("photo");
+  const [step, setStep] = useState<Step>("nfc");
+  const [nfcStatus, setNfcStatus] = useState<"checking" | "supported" | "unsupported">("checking");
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
@@ -44,6 +110,91 @@ export default function RegisterAssetScreen() {
   const createAsset = useMutation(api.assets.mutations.create);
   const createTemplate = useMutation(api.templates.create);
   const updateAssetTemplate = useMutation(api.assets.mutations.updateTemplate);
+
+  const openCameraAndContinue = useCallback(async () => {
+    const orgId = adminOrgs?.[0]?._id;
+    if (!orgId) return;
+
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Camera required",
+        "Venturai needs camera access to photograph assets.",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      allowsEditing: false,
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets[0]) {
+      setStep("nfc");
+      return;
+    }
+
+    const uri = result.assets[0].uri;
+    setSelectedOrgId(orgId);
+    setStep("suggesting");
+
+    try {
+      const uploadUrl = await generateUploadUrl();
+      const storageId = await uploadPhotoFromUri(uri, uploadUrl);
+      const suggestResult = await suggestFromPhoto({
+        orgId,
+        photoStorageId: storageId,
+      });
+      setForm({
+        name: suggestResult.name,
+        maintenanceGroupId: suggestResult.maintenanceGroupId,
+        manufacturer: suggestResult.manufacturer ?? "",
+        model: suggestResult.model ?? "",
+        serial: suggestResult.serial ?? "",
+      });
+      setStep("edit");
+    } catch {
+      setStep("nfc");
+      Alert.alert("Error", "Could not analyze photo. Please try again.");
+    }
+  }, [
+    adminOrgs,
+    generateUploadUrl,
+    suggestFromPhoto,
+  ]);
+
+  // Initialize NFC on mount
+  useEffect(() => {
+    let mounted = true;
+    initNfc().then((status) => {
+      if (mounted) {
+        setNfcStatus(status === "supported" ? "supported" : "unsupported");
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Start NFC scan when on nfc step and NFC is supported. When tag detected → open camera
+  useEffect(() => {
+    if (step !== "nfc" || nfcStatus !== "supported") return;
+
+    let mounted = true;
+    nfcAbortedRef.current = false;
+
+    waitForNfcTag().then((detected) => {
+      if (!mounted || nfcAbortedRef.current || !detected) return;
+      openCameraAndContinue();
+    });
+
+    return () => {
+      mounted = false;
+      nfcAbortedRef.current = true;
+      cancelNfcScan();
+    };
+  }, [step, nfcStatus, openCameraAndContinue]);
 
   if (adminOrgs === undefined) {
     return (
@@ -66,69 +217,50 @@ export default function RegisterAssetScreen() {
     );
   }
 
-  if (step === "photo") {
+  if (step === "nfc") {
+    const isChecking = nfcStatus === "checking";
+
+    if (nfcStatus === "unsupported") {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>NFC required</Text>
+          <Text style={styles.subtitle}>
+            This device does not support NFC, or NFC is disabled. Asset
+            registration requires NFC to read and write tags. Use a development
+            build on a supported device.
+          </Text>
+          <Pressable
+            style={[styles.button, styles.buttonOutline]}
+            onPress={() => router.back()}
+          >
+            <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+              Back
+            </Text>
+          </Pressable>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Register asset</Text>
         <Text style={styles.subtitle}>
-          Take a photo of the asset. AI will suggest details.
+          {isChecking
+            ? "Checking NFC..."
+            : "Hold your phone near the NFC tag. The camera will open when the tag is detected."}
         </Text>
-        <Text style={styles.placeholder}>
-          Take a photo, upload to storage, then AI suggests details. (Camera +
-          storage upload coming soon.)
-        </Text>
+
+        {isChecking && (
+          <ActivityIndicator size="large" style={styles.nfcSpinner} />
+        )}
+
         <Pressable
-          style={styles.button}
-          onPress={async () => {
-            const orgId = adminOrgs[0]?._id;
-            if (!orgId) return;
-            setSelectedOrgId(orgId);
-            try {
-              const url = await generateUploadUrl();
-              const blob = new Blob(["x"], { type: "image/jpeg" });
-              const resp = await fetch(url, { method: "POST", body: blob });
-              const { storageId } = (await resp.json()) as {
-                storageId: string;
-              };
-              if (storageId) {
-                setStep("suggesting");
-                const result = await suggestFromPhoto({
-                  orgId,
-                  photoStorageId: storageId as Id<"_storage">,
-                });
-                setForm({
-                  name: result.name,
-                  maintenanceGroupId: result.maintenanceGroupId,
-                  manufacturer: result.manufacturer ?? "",
-                  model: result.model ?? "",
-                  serial: result.serial ?? "",
-                });
-                setStep("edit");
-              }
-            } catch {
-              setStep("photo");
-            }
-          }}
+          style={[styles.button, styles.buttonOutline]}
+          onPress={() => router.back()}
         >
-          <Text style={styles.buttonText}>Take photo & get AI suggestion</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.button, styles.buttonSecondary]}
-          onPress={() => {
-            const orgId = adminOrgs[0]?._id;
-            if (!orgId) return;
-            setSelectedOrgId(orgId);
-            setStep("edit");
-            setForm({
-              name: "New Asset",
-              maintenanceGroupId: "",
-              manufacturer: "",
-              model: "",
-              serial: "",
-            });
-          }}
-        >
-          <Text style={styles.buttonText}>Skip: enter manually</Text>
+          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+            Cancel
+          </Text>
         </Pressable>
       </View>
     );
@@ -270,14 +402,14 @@ export default function RegisterAssetScreen() {
               assetId: createdAssetId as Id<"assets">,
               templateId,
             });
-            setStep("done");
+            setStep("write");
           }}
         >
           <Text style={styles.buttonText}>Create template (recommended)</Text>
         </Pressable>
         <Pressable
           style={[styles.button, styles.buttonSecondary]}
-          onPress={() => setStep("done")}
+          onPress={() => setStep("write")}
         >
           <Text style={styles.buttonText}>Skip for now</Text>
         </Pressable>
@@ -285,14 +417,22 @@ export default function RegisterAssetScreen() {
     );
   }
 
-  const url = createdAssetId
-    ? `venturai.app/a/${createdAssetId}`
-    : "venturai.app/a/<assetId>";
+  if (step === "write" && createdAssetId) {
+    return (
+      <NfcWriteStep
+        assetId={createdAssetId}
+        onSuccess={() => setStep("done")}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Asset registered</Text>
-      <Text style={styles.subtitle}>Write this URL to the NFC tag: {url}</Text>
+      <Text style={styles.subtitle}>
+        The asset URL has been written to the NFC tag. Scanning the tag will open
+        the asset dashboard.
+      </Text>
       <Pressable
         style={styles.button}
         onPress={() =>
@@ -318,6 +458,7 @@ const styles = StyleSheet.create({
   pad: { paddingBottom: 48 },
   title: { fontSize: 20, fontWeight: "600", marginBottom: 8 },
   subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
+  nfcSpinner: { marginVertical: 24 },
   label: { fontSize: 14, fontWeight: "500", marginBottom: 4 },
   input: {
     borderWidth: 1,
@@ -326,7 +467,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  placeholder: { fontSize: 14, color: "#94a3b8", marginBottom: 16 },
   hint: { marginTop: 12, fontSize: 14, color: "#64748b" },
   button: {
     backgroundColor: "#2563eb",
@@ -336,7 +476,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   buttonSecondary: { backgroundColor: "#64748b" },
+  buttonOutline: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#e2e8f0" },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  buttonTextSecondary: { color: "#64748b" },
   groupList: {
     flexDirection: "row",
     flexWrap: "wrap",

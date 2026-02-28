@@ -12,6 +12,11 @@
     "dev:expo": "pnpm --filter @venturai/expo dev",
     "dev:web": "pnpm --filter @venturai/web dev",
     "dev:backend": "pnpm --filter @venturai/backend dev",
+
+    "expo:prebuild": "pnpm --filter @venturai/expo prebuild",
+    "dev:android": "pnpm --filter @venturai/expo android",
+    "dev:ios": "pnpm --filter @venturai/expo ios",
+
     "lint": "turbo run lint",
     "format": "turbo run format",
     "typecheck": "turbo run typecheck",
