@@ -21,7 +21,6 @@ export default defineSchema({
     phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
-    role: v.optional(v.union(v.literal("admin"), v.literal("maintainer"))),
   })
     .index("email", ["email"])
     .index("phone", ["phone"]),

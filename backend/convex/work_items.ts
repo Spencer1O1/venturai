@@ -1,5 +1,6 @@
-import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+
+import type { Doc, Id } from "./_generated/dataModel";
 import { query } from "./_generated/server";
 
 const workItemDocValidator = v.object({
@@ -47,23 +48,25 @@ export const listOpenByOrgOrGroup = query({
   },
   returns: v.array(workItemDocValidator),
   handler: async (ctx, args) => {
-    if (!args.orgId && !args.maintenanceGroupId) {
+    const { orgId, maintenanceGroupId } = args;
+    if (!orgId && !maintenanceGroupId) {
       throw new Error("Provide orgId or maintenanceGroupId");
     }
 
     let assetIds: Id<"assets">[];
-    if (args.maintenanceGroupId) {
+    if (maintenanceGroupId) {
       const assets = await ctx.db
         .query("assets")
         .withIndex("by_maintenanceGroupId", (q) =>
-          q.eq("maintenanceGroupId", args.maintenanceGroupId!),
+          q.eq("maintenanceGroupId", maintenanceGroupId),
         )
         .collect();
       assetIds = assets.map((a) => a._id);
     } else {
+      if (!orgId) throw new Error("Provide orgId or maintenanceGroupId");
       const assets = await ctx.db
         .query("assets")
-        .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId!))
+        .withIndex("by_orgId", (q) => q.eq("orgId", orgId))
         .collect();
       assetIds = assets.map((a) => a._id);
     }

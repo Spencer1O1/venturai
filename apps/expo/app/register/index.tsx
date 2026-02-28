@@ -1,3 +1,5 @@
+import { api } from "@venturai/backend";
+import type { Id } from "@venturai/backend/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -10,9 +12,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-
-import type { Id } from "@venturai/backend/dataModel";
-import { api } from "@venturai/backend";
 
 type Step = "photo" | "suggesting" | "edit" | "creating" | "template" | "done";
 
@@ -88,7 +87,9 @@ export default function RegisterAssetScreen() {
               const url = await generateUploadUrl();
               const blob = new Blob(["x"], { type: "image/jpeg" });
               const resp = await fetch(url, { method: "POST", body: blob });
-              const { storageId } = (await resp.json()) as { storageId: string };
+              const { storageId } = (await resp.json()) as {
+                storageId: string;
+              };
               if (storageId) {
                 setStep("suggesting");
                 const result = await suggestFromPhoto({
@@ -291,9 +292,7 @@ export default function RegisterAssetScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Asset registered</Text>
-      <Text style={styles.subtitle}>
-        Write this URL to the NFC tag: {url}
-      </Text>
+      <Text style={styles.subtitle}>Write this URL to the NFC tag: {url}</Text>
       <Pressable
         style={styles.button}
         onPress={() =>

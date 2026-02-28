@@ -26,22 +26,19 @@ export const create = mutation({
     if (!identity) throw new Error("Not authenticated");
 
     const userId = identity.subject as Id<"users">;
-    const user = await ctx.db.get(userId);
-    if (!user) throw new Error("User not found");
-
     const org = await ctx.db.get(args.orgId);
     if (!org) throw new Error("Org not found");
 
-    const isAdmin =
-      user.role === "admin" ||
-      (await ctx.db
-        .query("orgMembers")
-        .withIndex("by_userId_and_orgId", (q) =>
-          q.eq("userId", userId).eq("orgId", args.orgId),
-        )
-        .unique())?.role === "admin";
+    const membership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId_and_orgId", (q) =>
+        q.eq("userId", userId).eq("orgId", args.orgId),
+      )
+      .unique();
 
-    if (!isAdmin) throw new Error("Must be admin of this org to create assets");
+    if (membership?.role !== "admin") {
+      throw new Error("Must be admin of this org to create assets");
+    }
     const group = await ctx.db.get(args.maintenanceGroupId);
     if (!group) throw new Error("Maintenance group not found");
     if (args.templateId) {
@@ -82,22 +79,17 @@ export const updateTemplate = mutation({
     if (!identity) throw new Error("Not authenticated");
 
     const userId = identity.subject as Id<"users">;
-    const user = await ctx.db.get(userId);
-    if (!user) throw new Error("User not found");
-
     const asset = await ctx.db.get(args.assetId);
     if (!asset) throw new Error("Asset not found");
 
-    const isAdmin =
-      user.role === "admin" ||
-      (await ctx.db
-        .query("orgMembers")
-        .withIndex("by_userId_and_orgId", (q) =>
-          q.eq("userId", userId).eq("orgId", asset.orgId),
-        )
-        .unique())?.role === "admin";
+    const membership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId_and_orgId", (q) =>
+        q.eq("userId", userId).eq("orgId", asset.orgId),
+      )
+      .unique();
 
-    if (!isAdmin) throw new Error("Must be admin of this org");
+    if (membership?.role !== "admin") throw new Error("Must be admin of this org");
 
     if (args.templateId) {
       const tpl = await ctx.db.get(args.templateId);

@@ -23,28 +23,32 @@ export const create = mutation({
     if (!identity) throw new Error("Authentication required");
 
     const userId = identity.subject as Id<"users">;
-    const user = await ctx.db.get(userId);
-    if (!user) throw new Error("User not found");
-
     const asset = await ctx.db.get(args.assetId);
     if (!asset) throw new Error("Asset not found");
 
     const group = await ctx.db.get(args.maintenanceGroupId);
     if (!group) throw new Error("Maintenance group not found");
 
-    // Only admin or maintainer in this asset's maintenance group can create records
-    const isAdmin = user.role === "admin";
-    const isMaintainerInGroup =
-      user.role === "maintainer" &&
-      (await ctx.db
+    const [orgMembership, mgMembership] = await Promise.all([
+      ctx.db
+        .query("orgMembers")
+        .withIndex("by_userId_and_orgId", (q) =>
+          q.eq("userId", userId).eq("orgId", asset.orgId),
+        )
+        .unique(),
+      ctx.db
         .query("maintenanceGroupMembers")
         .withIndex("by_userId_and_maintenanceGroupId", (q) =>
           q.eq("userId", userId).eq("maintenanceGroupId", asset.maintenanceGroupId),
         )
-        .unique()) != null;
+        .unique(),
+    ]);
+
+    const isAdmin = orgMembership?.role === "admin";
+    const isMaintainerInGroup = mgMembership != null;
 
     if (!isAdmin && !isMaintainerInGroup) {
-      throw new Error("Must be admin or maintainer for this asset's group");
+      throw new Error("Must be admin of this org or maintainer in this asset's group");
     }
 
     const now = Date.now();

@@ -21,15 +21,6 @@ export const getOrgsUserIsAdminOf = query({
     if (!identity) return [];
 
     const userId = identity.subject as Id<"users">;
-    const user = await ctx.db.get(userId);
-    if (!user) return [];
-
-    // Global admin can admin any org
-    if (user.role === "admin") {
-      const orgs = await ctx.db.query("orgs").collect();
-      return orgs.map((o) => ({ _id: o._id, name: o.name, role: "admin" as const }));
-    }
-
     const memberships = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -56,11 +47,6 @@ export const isUserAdminOfOrg = query({
     if (!identity) return false;
 
     const userId = identity.subject as Id<"users">;
-    const user = await ctx.db.get(userId);
-    if (!user) return false;
-
-    if (user.role === "admin") return true;
-
     const membership = await ctx.db
       .query("orgMembers")
       .withIndex("by_userId_and_orgId", (q) =>
@@ -74,7 +60,7 @@ export const isUserAdminOfOrg = query({
 
 /**
  * Add a user as admin or member of an org.
- * Caller must be global admin (users.role=admin).
+ * Caller must be admin of that org.
  */
 export const addOrgMember = mutation({
   args: {
@@ -87,9 +73,15 @@ export const addOrgMember = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
 
-    const caller = await ctx.db.get(identity.subject as Id<"users">);
-    if (!caller || caller.role !== "admin") {
-      throw new Error("Only global admins can add org members");
+    const callerMembership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId_and_orgId", (q) =>
+        q.eq("userId", identity.subject as Id<"users">).eq("orgId", args.orgId),
+      )
+      .unique();
+
+    if (!callerMembership || callerMembership.role !== "admin") {
+      throw new Error("Must be admin of this org to add members");
     }
 
     const org = await ctx.db.get(args.orgId);

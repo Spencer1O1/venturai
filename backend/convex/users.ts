@@ -4,30 +4,8 @@ import type { Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 
 /**
- * Set user role (admin only). Used to promote users to admin or maintainer.
- */
-export const setRole = mutation({
-  args: {
-    userId: v.id("users"),
-    role: v.union(v.literal("admin"), v.literal("maintainer")),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    const caller = await ctx.auth.getUserIdentity();
-    if (!caller) throw new Error("Not authenticated");
-
-    const callerUser = await ctx.db.get(caller.subject as Id<"users">);
-    if (!callerUser || callerUser.role !== "admin") {
-      throw new Error("Only admins can set roles");
-    }
-
-    await ctx.db.patch(args.userId, { role: args.role });
-    return null;
-  },
-});
-
-/**
- * Add maintainer to a maintenance group (admin only).
+ * Add maintainer to a maintenance group.
+ * Caller must be admin of the org that owns the maintenance group.
  */
 export const addMaintenanceGroupMember = mutation({
   args: {
@@ -39,9 +17,20 @@ export const addMaintenanceGroupMember = mutation({
     const caller = await ctx.auth.getUserIdentity();
     if (!caller) throw new Error("Not authenticated");
 
-    const callerUser = await ctx.db.get(caller.subject as Id<"users">);
-    if (!callerUser || callerUser.role !== "admin") {
-      throw new Error("Only admins can add maintenance group members");
+    const group = await ctx.db.get(args.maintenanceGroupId);
+    if (!group) throw new Error("Maintenance group not found");
+
+    const callerMembership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId_and_orgId", (q) =>
+        q
+          .eq("userId", caller.subject as Id<"users">)
+          .eq("orgId", group.orgId),
+      )
+      .unique();
+
+    if (!callerMembership || callerMembership.role !== "admin") {
+      throw new Error("Must be admin of this org to add maintenance group members");
     }
 
     const existing = await ctx.db

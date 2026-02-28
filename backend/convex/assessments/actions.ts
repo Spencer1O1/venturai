@@ -45,11 +45,13 @@ export const createWithAI = action({
     lastAssessedAt: v.number(),
   }),
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(api.auth_helpers.getCurrentUser);
-    const createdByRole =
-      user?.role === "admin" || user?.role === "maintainer"
-        ? user.role
-        : undefined;
+    const [user, roleForAsset] = await Promise.all([
+      ctx.runQuery(api.auth_helpers.getCurrentUser),
+      ctx.runQuery(api.auth_helpers.getUserRoleForAsset, {
+        assetId: args.assetId,
+      }),
+    ]);
+    const createdByRole = roleForAsset ?? undefined;
     const createdByUserId = user?._id;
 
     const assessmentId = await ctx.runMutation(

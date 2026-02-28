@@ -47,22 +47,17 @@ export const create = mutation({
     if (!identity) throw new Error("Not authenticated");
 
     const userId = identity.subject as Id<"users">;
-    const user = await ctx.db.get(userId);
-    if (!user) throw new Error("User not found");
-
     const org = await ctx.db.get(args.orgId);
     if (!org) throw new Error("Org not found");
 
-    const isAdmin =
-      user.role === "admin" ||
-      (await ctx.db
-        .query("orgMembers")
-        .withIndex("by_userId_and_orgId", (q) =>
-          q.eq("userId", userId).eq("orgId", args.orgId),
-        )
-        .unique())?.role === "admin";
+    const membership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId_and_orgId", (q) =>
+        q.eq("userId", userId).eq("orgId", args.orgId),
+      )
+      .unique();
 
-    if (!isAdmin) throw new Error("Must be admin of this org");
+    if (membership?.role !== "admin") throw new Error("Must be admin of this org");
 
     const now = Date.now();
     return await ctx.db.insert("assessmentTemplates", {
@@ -90,23 +85,19 @@ export const update = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
 
-    const userId = identity.subject as Id<"users">;
-    const user = await ctx.db.get(userId);
-    if (!user) throw new Error("User not found");
-
     const template = await ctx.db.get(args.templateId);
     if (!template) throw new Error("Template not found");
 
-    const isAdmin =
-      user.role === "admin" ||
-      (await ctx.db
-        .query("orgMembers")
-        .withIndex("by_userId_and_orgId", (q) =>
-          q.eq("userId", userId).eq("orgId", template.orgId),
-        )
-        .unique())?.role === "admin";
+    const membership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId_and_orgId", (q) =>
+        q
+          .eq("userId", identity.subject as Id<"users">)
+          .eq("orgId", template.orgId),
+      )
+      .unique();
 
-    if (!isAdmin) throw new Error("Must be admin of this org");
+    if (membership?.role !== "admin") throw new Error("Must be admin of this org");
 
     const updates: {
       name?: string;
