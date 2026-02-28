@@ -2,7 +2,12 @@ const path = require("node:path");
 
 // Use absolute paths so prebuild resolves images correctly (fixes monorepo path issues)
 const projectRoot = __dirname;
-const iconPath = path.resolve(projectRoot, "assets/images/icon.png");
+const assetsDir = path.join(projectRoot, "assets/images/expo-icons");
+const iconPath = path.join(assetsDir, "icon.png");
+const adaptiveIconPath = path.join(assetsDir, "adaptive-icon.png");
+const splashIconPath = path.join(assetsDir, "splash-icon.png");
+const splashImagePath = path.join(assetsDir, "splash.png");
+const faviconPath = path.join(assetsDir, "favicon.png");
 
 // Plugin: copy icon to splashscreen_logo (required when splash image disabled)
 const withSplashLogoDrawable = require("./plugins/withSplashLogoDrawable.cjs");
@@ -21,7 +26,7 @@ const config = {
   ios: { supportsTablet: true },
   android: {
     adaptiveIcon: {
-      foregroundImage: iconPath,
+      foregroundImage: adaptiveIconPath,
       backgroundColor: "#ffffff",
     },
     permissions: ["android.permission.NFC", "android.permission.RECORD_AUDIO"],
@@ -40,13 +45,16 @@ const config = {
     [
       "expo-splash-screen",
       {
-        // Splash image disabled: Jimp "Could not find MIME for Buffer <null>" on Windows prebuild
-        backgroundColor: "#ffffff",
+        backgroundColor: "#0D1117",
+        image: splashIconPath,
+        imageWidth: 200,
+        resizeMode: "contain",
       },
     ],
-    [withSplashLogoDrawable, { iconPath }],
+    [withSplashLogoDrawable, { iconPath: splashIconPath }],
     withNfcIntentFilter,
   ],
+  web: { favicon: faviconPath },
   experiments: { typedRoutes: true, reactCompiler: true },
   extra: {
     router: { origin: "https://venturai.app" },

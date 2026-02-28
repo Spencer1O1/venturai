@@ -1,19 +1,19 @@
 {
   "expo": {
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/expo-icons/icon.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/images/expo-icons/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#090712"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/images/expo-icons/adaptive-icon.png",
         "backgroundColor": "#090712"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/images/expo-icons/favicon.png"
     }
   }
 }
