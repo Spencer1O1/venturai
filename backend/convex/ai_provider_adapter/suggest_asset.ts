@@ -1,5 +1,5 @@
-import { validateAssetSuggestion } from "./asset_suggestion_schema";
 import type { AssetSuggester, SuggestAssetPayload } from "./types";
+import { validateAssetSuggestion } from "./validation/asset_suggestion";
 
 export async function suggestAsset(
   suggester: AssetSuggester,

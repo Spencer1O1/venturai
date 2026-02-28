@@ -27,17 +27,17 @@ const findingSchema = z.object({
   evidence: z.string(),
 });
 
-export const aiOutputSchema = z.object({
+export const aiAnalysisSchema = z.object({
   summary: z.string(),
   overall_priority: z.number().min(0).max(1),
   findings: z.array(findingSchema),
   actions: z.array(actionSchema).max(3, "actions must have at most 3 items"),
 });
 
-export type AIOutput = z.infer<typeof aiOutputSchema>;
+export type AIAnalysis = z.infer<typeof aiAnalysisSchema>;
 
-export function validateAIOutput(raw: unknown): AIOutput {
-  const result = aiOutputSchema.safeParse(raw);
+export function validateAIAnalysis(raw: unknown): AIAnalysis {
+  const result = aiAnalysisSchema.safeParse(raw);
   if (!result.success) {
     const issues =
       (

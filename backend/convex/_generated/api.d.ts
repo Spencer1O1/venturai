@@ -8,16 +8,17 @@
  * @module
  */
 
-import type * as ai_provider_adapter_ai_output_schema from "../ai_provider_adapter/ai_output_schema.js";
 import type * as ai_provider_adapter_analyze from "../ai_provider_adapter/analyze.js";
-import type * as ai_provider_adapter_asset_suggestion_schema from "../ai_provider_adapter/asset_suggestion_schema.js";
 import type * as ai_provider_adapter_index from "../ai_provider_adapter/index.js";
 import type * as ai_provider_adapter_openai_analyze from "../ai_provider_adapter/openai/analyze.js";
 import type * as ai_provider_adapter_openai_index from "../ai_provider_adapter/openai/index.js";
+import type * as ai_provider_adapter_openai_schemas_analyze from "../ai_provider_adapter/openai/schemas/analyze.js";
+import type * as ai_provider_adapter_openai_schemas_suggest_asset from "../ai_provider_adapter/openai/schemas/suggest_asset.js";
 import type * as ai_provider_adapter_openai_suggest_asset from "../ai_provider_adapter/openai/suggest_asset.js";
-import type * as ai_provider_adapter_parse_raw_ai_response from "../ai_provider_adapter/parse_raw_ai_response.js";
 import type * as ai_provider_adapter_suggest_asset from "../ai_provider_adapter/suggest_asset.js";
 import type * as ai_provider_adapter_types from "../ai_provider_adapter/types.js";
+import type * as ai_provider_adapter_validation_analyze from "../ai_provider_adapter/validation/analyze.js";
+import type * as ai_provider_adapter_validation_asset_suggestion from "../ai_provider_adapter/validation/asset_suggestion.js";
 import type * as assessments_actions from "../assessments/actions.js";
 import type * as assessments_helpers from "../assessments/helpers.js";
 import type * as assessments_internal_mutations from "../assessments/internal_mutations.js";
@@ -51,16 +52,17 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  "ai_provider_adapter/ai_output_schema": typeof ai_provider_adapter_ai_output_schema;
   "ai_provider_adapter/analyze": typeof ai_provider_adapter_analyze;
-  "ai_provider_adapter/asset_suggestion_schema": typeof ai_provider_adapter_asset_suggestion_schema;
   "ai_provider_adapter/index": typeof ai_provider_adapter_index;
   "ai_provider_adapter/openai/analyze": typeof ai_provider_adapter_openai_analyze;
   "ai_provider_adapter/openai/index": typeof ai_provider_adapter_openai_index;
+  "ai_provider_adapter/openai/schemas/analyze": typeof ai_provider_adapter_openai_schemas_analyze;
+  "ai_provider_adapter/openai/schemas/suggest_asset": typeof ai_provider_adapter_openai_schemas_suggest_asset;
   "ai_provider_adapter/openai/suggest_asset": typeof ai_provider_adapter_openai_suggest_asset;
-  "ai_provider_adapter/parse_raw_ai_response": typeof ai_provider_adapter_parse_raw_ai_response;
   "ai_provider_adapter/suggest_asset": typeof ai_provider_adapter_suggest_asset;
   "ai_provider_adapter/types": typeof ai_provider_adapter_types;
+  "ai_provider_adapter/validation/analyze": typeof ai_provider_adapter_validation_analyze;
+  "ai_provider_adapter/validation/asset_suggestion": typeof ai_provider_adapter_validation_asset_suggestion;
   "assessments/actions": typeof assessments_actions;
   "assessments/helpers": typeof assessments_helpers;
   "assessments/internal_mutations": typeof assessments_internal_mutations;

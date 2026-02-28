@@ -1,7 +1,7 @@
 "use node";
 
-import { getAssetSuggestionJsonSchema } from "../asset_suggestion_schema";
 import type { AssetSuggester, SuggestAssetPayload } from "../types";
+import { AssetSuggestionSchema } from "./schemas/suggest_asset";
 
 export const suggestAsset: AssetSuggester = async (
   payload: SuggestAssetPayload,
@@ -15,7 +15,7 @@ export const suggestAsset: AssetSuggester = async (
   const groupsList = payload.maintenanceGroups
     .map((g) => `- ${g.name} [${g._id}]`)
     .join("\n");
-  const schema = getAssetSuggestionJsonSchema(groupIds);
+  const schema = AssetSuggestionSchema(groupIds);
 
   const systemPrompt = [
     "You are an industrial asset registration assistant. Analyze the photo of an asset and suggest registration details.",
