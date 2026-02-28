@@ -4,29 +4,37 @@
   box-sizing: border-box;
 }
 
-/* Light mode (default) */
+/* Light mode (default) – blue accent to match dark mode */
 :root {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
   --card-border: #e2e8f0;
-  --primary: #ea580c;
-  --primary-light: #f97316;
-  --link: #ea580c;
+  --primary: #00ACE6;
+  --primary-light: #33bdea;
+  --link: #00ACE6;
   color: var(--foreground);
   background: var(--background);
 }
 
-/* Dark mode */
+/* Dark mode – theme from lib/theme.ts */
 .dark {
-  --background: #0a0a0f;
-  --foreground: #ffffff;
-  --card: #1a1a24;
-  --card-border: #2a2a3a;
-  --primary: #fb923c;
-  --primary-light: #fdba74;
-  --link: #fb923c;
+  --background: #0D1117;
+  --foreground: #E6EDF3;
+  --card: #21262D;
+  --card-border: #30363D;
+  --primary: #00ACE6;
+  --primary-light: #33bdea;
+  --link: #00ACE6;
+  --accent: #00ACE6;
+  --accent-muted: rgba(0, 172, 230, 0.6);
+  --text-muted: #8B949E;
+  --text-subtle: #6E7681;
+  --border: #30363D;
+  --success: #00D68F;
+  --error: #F87171;
+  --warning: #FBBF24;
   color: var(--foreground);
   background: var(--background);
 }

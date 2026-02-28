@@ -15,21 +15,21 @@ const config: Config = {
         primary: {
           DEFAULT: "var(--primary)",
           light: "var(--primary-light)",
-          glow: "#f97316",
+          glow: "var(--accent)",
         },
         accent: {
-          DEFAULT: "#23c9ff",
-          dark: "#1ab3e8",
+          DEFAULT: "var(--accent, #00ACE6)",
+          muted: "var(--accent-muted)",
         },
         card: {
           DEFAULT: "var(--card)",
           border: "var(--card-border)",
         },
         risk: {
-          low: "#22c55e",
-          medium: "#eab308",
+          low: "#00D68F",
+          medium: "#FBBF24",
           high: "#f97316",
-          critical: "#ef4444",
+          critical: "#F87171",
         },
       },
       keyframes: {
@@ -58,11 +58,11 @@ const config: Config = {
         "glow-pulse-accent": {
           "0%, 100%": {
             opacity: "1",
-            filter: "drop-shadow(0 0 8px #23c9ff)",
+            filter: "drop-shadow(0 0 8px #00ACE6)",
           },
           "50%": {
             opacity: "0.8",
-            filter: "drop-shadow(0 0 20px #23c9ff)",
+            filter: "drop-shadow(0 0 20px #00ACE6)",
           },
         },
       },
