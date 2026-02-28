@@ -71,7 +71,11 @@ export default function ReportMaintenanceScreen() {
           afterPhotoStorageIds.length > 0 ? afterPhotoStorageIds : undefined,
       });
 
-      router.replace(`/a/${id}` as never);
+      Alert.alert(
+        "Maintenance recorded",
+        `${selectedIds.size} work item(s) marked as completed.`,
+        [{ text: "OK", onPress: () => router.replace(`/a/${id}` as never) }],
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Submit failed";
       Alert.alert("Error", msg);

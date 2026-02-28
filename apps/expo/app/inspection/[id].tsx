@@ -15,6 +15,7 @@ import {
 } from "react-native";
 
 import { PhotoCaptureSlot } from "../../components/PhotoCaptureSlot";
+import { buildAssessmentSuccessMessage } from "../../lib/assessmentSuccessMessage";
 import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
 
 /**
@@ -68,7 +69,7 @@ export default function InspectionScreen() {
         storageIds.push(sid);
       }
 
-      await createWithAI({
+      const result = await createWithAI({
         assetId,
         intent: "routine",
         photoStorageIds: storageIds,
@@ -77,7 +78,10 @@ export default function InspectionScreen() {
         notes: notes || undefined,
       });
 
-      router.replace(`/a/${id}` as never);
+      const msg = buildAssessmentSuccessMessage(result.aiAnalysis);
+      Alert.alert("Assessment submitted", msg, [
+        { text: "OK", onPress: () => router.replace(`/a/${id}` as never) },
+      ]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Submit failed";
       Alert.alert("Error", msg);
