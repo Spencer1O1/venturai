@@ -1,0 +1,38 @@
+import { v } from "convex/values";
+
+import { mutation, query } from "./_generated/server";
+
+/**
+ * Get the first org (or default). For single-org setups.
+ */
+export const getDefaultOrFirst = query({
+  args: {},
+  returns: v.union(
+    v.object({
+      _id: v.id("orgs"),
+      _creationTime: v.number(),
+      name: v.string(),
+      createdAt: v.number(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx) => {
+    const org = await ctx.db.query("orgs").first();
+    return org;
+  },
+});
+
+/**
+ * Create an org.
+ */
+export const create = mutation({
+  args: { name: v.string() },
+  returns: v.id("orgs"),
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    return await ctx.db.insert("orgs", {
+      name: args.name,
+      createdAt: now,
+    });
+  },
+});

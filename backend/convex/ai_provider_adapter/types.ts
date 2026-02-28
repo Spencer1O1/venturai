@@ -1,3 +1,5 @@
+import type { AIOutput } from "./ai_output_schema";
+
 export type AIMetadata = {
   provider: "openai" | "gemini" | "claude";
   model?: string;
@@ -12,9 +14,28 @@ export type AIAnalyzerResponse = {
 };
 
 export type AnalyzePayload = {
-  imageUrl: string;
+  imageUrls: string[];
+  assetMetadata: {
+    assetName: string;
+    assetType: string;
+    manufacturer?: string;
+    model?: string;
+    locationText?: string;
+    externalId?: string;
+    maintenanceGroupName?: string;
+  };
+  template: {
+    photoDescriptions: string[];
+    additionalQuestions: Array<{ key: string; label: string; type: string }>;
+  };
+  answers: Record<string, string | number | boolean>;
+  notes?: string;
+  intent: "routine" | "problem";
+  existingOpenActionKeys: string[];
 };
 
 export type AIAnalyzer = (
   payload: AnalyzePayload,
 ) => Promise<AIAnalyzerResponse>;
+
+export type { AIOutput };

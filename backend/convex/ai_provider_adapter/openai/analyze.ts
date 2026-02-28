@@ -1,4 +1,82 @@
+"use node";
+
 import type { AIAnalyzer, AnalyzePayload } from "../types";
+
+const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
+
+function buildSystemPrompt(): string {
+  return `You are an industrial maintenance assessment AI. Analyze asset photos and metadata to produce a structured JSON report.
+
+RULES:
+- Return JSON ONLY. No markdown, no code fences, no extra text.
+- Maximum 3 actions. Prioritize by risk and urgency.
+- suggested_key MUST be snake_case matching ^[a-z][a-z0-9_]{0,47}$
+- Prefer reusing existing action keys when the finding matches.
+- overall_priority, priority, severity: 0.0 to 1.0
+- risk_value: integer 0 to 100
+- Be concise.`;
+}
+
+function buildUserMessage(payload: AnalyzePayload): string {
+  const {
+    assetMetadata,
+    template,
+    answers,
+    notes,
+    intent,
+    existingOpenActionKeys,
+  } = payload;
+
+  const lines: string[] = [
+    "## Asset",
+    `Name: ${assetMetadata.assetName}`,
+    `Type: ${assetMetadata.assetType}`,
+    ...(assetMetadata.manufacturer
+      ? [`Manufacturer: ${assetMetadata.manufacturer}`]
+      : []),
+    ...(assetMetadata.model ? [`Model: ${assetMetadata.model}`] : []),
+    ...(assetMetadata.locationText
+      ? [`Location: ${assetMetadata.locationText}`]
+      : []),
+    ...(assetMetadata.externalId
+      ? [`External ID: ${assetMetadata.externalId}`]
+      : []),
+    ...(assetMetadata.maintenanceGroupName
+      ? [`Maintenance Group: ${assetMetadata.maintenanceGroupName}`]
+      : []),
+    "",
+    "## Intent",
+    intent === "problem" ? "Report a problem" : "Routine assessment",
+    "",
+    "## Required photo descriptions (template)",
+    ...template.photoDescriptions.map((d, i) => `- ${i + 1}. ${d}`),
+    "",
+  ];
+
+  if (template.additionalQuestions.length > 0) {
+    lines.push("## Answers");
+    for (const q of template.additionalQuestions) {
+      const v = answers[q.key];
+      lines.push(`- ${q.label}: ${v ?? "(not provided)"}`);
+    }
+    lines.push("");
+  }
+
+  if (notes) {
+    lines.push("## Notes", notes, "");
+  }
+
+  if (existingOpenActionKeys.length > 0) {
+    lines.push(
+      "## Existing open action keys (reuse when applicable)",
+      existingOpenActionKeys.join(", "),
+      "",
+    );
+  }
+
+  lines.push("Analyze the attached images and return the JSON report.");
+  return lines.join("\n");
+}
 
 export const analyze: AIAnalyzer = async (payload: AnalyzePayload) => {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -6,48 +84,31 @@ export const analyze: AIAnalyzer = async (payload: AnalyzePayload) => {
     throw new Error("OPENAI_API_KEY is not set");
   }
 
-  const model = process.env.OPENAI_API_KEY;
+  const model = process.env.OPENAI_MODEL ?? "gpt-4o";
 
-  const schema = {
-    types: "object",
-    additionalProperties: false,
-    properties: {},
-    required: [],
-  } as const;
+  const content: Array<
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string } }
+  > = [{ type: "text", text: buildUserMessage(payload) }];
 
-  // System prompt
-  const system = [""].join("\n");
+  for (const url of payload.imageUrls) {
+    content.push({ type: "image_url", image_url: { url } });
+  }
 
-  const uSections: string[] = [];
-
-  const userText = uSections.join("\n");
-
-  const resp = await fetch("https://api.openai.com/v1/responses", {
+  const resp = await fetch(OPENAI_CHAT_URL, {
     method: "POST",
     headers: {
-      Authorization: `bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       model,
-      input: [
-        { role: "system", content: [{ type: "input_text", text: system }] },
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: userText },
-            { type: "input_image", image_url: payload.imageUrl },
-          ],
-        },
+      messages: [
+        { role: "system", content: buildSystemPrompt() },
+        { role: "user", content },
       ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "AssetAnalysis",
-          schema,
-          strict: true,
-        },
-      },
+      response_format: { type: "json_object" },
+      max_tokens: 2048,
     }),
   });
 
@@ -56,17 +117,27 @@ export const analyze: AIAnalyzer = async (payload: AnalyzePayload) => {
     throw new Error(`OpenAI request failed: ${resp.status} ${err}`);
   }
 
-  const data = await resp.json();
+  const data = (await resp.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
 
-  // Extract the JSON text from Responses output
-  const content = (data.output ?? []).flatMap((o: any) => o.content ?? []);
-  const text = content.find((c: any) => c.type === "output_text")?.text;
-  if (!text) throw new Error("OpenAI response missing output_text");
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) {
+    throw new Error("OpenAI response missing content");
+  }
+
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    throw new Error(`OpenAI returned invalid JSON: ${text.slice(0, 200)}`);
+  }
 
   return {
-    raw: JSON.parse(text),
+    raw,
     meta: {
       provider: "openai",
+      model,
       timestamp: Date.now(),
     },
   };

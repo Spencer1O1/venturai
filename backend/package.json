@@ -27,7 +27,8 @@
     "postinstall": "node ../scripts/symlink-env.js"
   },
   "dependencies": {
-    "convex": "^1.28.0"
+    "convex": "^1.28.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@venturai/typescript": "workspace:*",
