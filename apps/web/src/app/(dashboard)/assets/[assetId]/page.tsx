@@ -1,15 +1,32 @@
-import { RiskBadge } from "@/components/RiskBadge";
-import { MOCK_ASSETS, MOCK_WORK_ITEMS } from "@/lib/mockData";
+"use client";
+
+import { RiskHeatmapPill } from "@/components/RiskHeatmapCell";
+import { api } from "@venturai/backend";
+import type { Id } from "@venturai/backend/dataModel";
+import { useQuery } from "convex/react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
-type Props = { params: Promise<{ assetId: string }> };
+export default function AssetDetailPage() {
+  const params = useParams();
+  const assetId = params.assetId as string;
 
-export default async function AssetDetailPage({ params }: Props) {
-  const { assetId } = await params;
-  const asset = MOCK_ASSETS.find((a) => a.id === assetId);
-  const workItems = MOCK_WORK_ITEMS.filter(
-    (w) => w.assetId === assetId && w.status === "open",
+  const asset = useQuery(
+    api.assets.queries.getById,
+    assetId ? { assetId: assetId as Id<"assets"> } : "skip",
   );
+  const workItems = useQuery(
+    api.work_items.listOpenByAsset,
+    assetId ? { assetId: assetId as Id<"assets"> } : "skip",
+  );
+
+  if (asset === undefined || workItems === undefined) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center p-8">
+        <div className="text-foreground/60">Loading…</div>
+      </div>
+    );
+  }
 
   if (!asset) {
     return (
@@ -24,6 +41,8 @@ export default async function AssetDetailPage({ params }: Props) {
       </div>
     );
   }
+
+  const openItems = workItems ?? [];
 
   return (
     <div className="p-8">
@@ -40,10 +59,10 @@ export default async function AssetDetailPage({ params }: Props) {
             {asset.name}
           </h1>
           <p className="mt-1 text-foreground/60">
-            {asset.location ?? "No location"}
+            {asset.locationText ?? "No location"}
           </p>
         </div>
-        <RiskBadge riskScore={asset.riskScore} />
+        <RiskHeatmapPill riskScore={asset.riskScore} />
       </header>
 
       <section className="mb-8 rounded-xl border border-card-border bg-card p-6">
@@ -66,13 +85,13 @@ export default async function AssetDetailPage({ params }: Props) {
           <div>
             <dt className="text-xs text-foreground/50">Open work items</dt>
             <dd className="mt-0.5 font-medium text-foreground">
-              {asset.openWorkItemCount}
+              {openItems.length}
             </dd>
           </div>
           <div>
             <dt className="text-xs text-foreground/50">Asset ID</dt>
             <dd className="mt-0.5 font-mono text-sm text-foreground/80">
-              {asset.id}
+              {asset._id}
             </dd>
           </div>
         </dl>
@@ -82,21 +101,21 @@ export default async function AssetDetailPage({ params }: Props) {
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-foreground/60">
           Open work items
         </h2>
-        {workItems.length === 0 ? (
+        {openItems.length === 0 ? (
           <p className="rounded-xl border border-card-border bg-card p-6 text-foreground/60">
             No open work items for this asset.
           </p>
         ) : (
           <ul className="space-y-3">
-            {workItems.map((item) => (
+            {openItems.map((item) => (
               <li
-                key={item.id}
+                key={item._id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card-border bg-card p-4"
               >
                 <span className="font-medium text-foreground">
                   {item.title}
                 </span>
-                <RiskBadge riskScore={item.riskValue} />
+                <RiskHeatmapPill riskScore={item.riskValue} />
               </li>
             ))}
           </ul>
