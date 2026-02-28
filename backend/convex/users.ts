@@ -27,7 +27,10 @@ export const addMaintenanceGroupMember = mutation({
       )
       .unique();
 
-    if (!callerMembership || callerMembership.role !== "admin") {
+    if (
+      !callerMembership ||
+      (callerMembership.role !== "admin" && callerMembership.role !== "owner")
+    ) {
       throw new Error(
         "Must be admin of this org to add maintenance group members",
       );

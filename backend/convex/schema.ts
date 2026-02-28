@@ -25,11 +25,24 @@ export default defineSchema({
     .index("email", ["email"])
     .index("phone", ["phone"]),
 
-  /** Admins and members belong to organizations */
+  /** Shareable invite links for joining orgs */
+  orgInvites: defineTable({
+    orgId: v.id("orgs"),
+    code: v.string(),
+    role: v.union(v.literal("admin"), v.literal("member")),
+    createdByUserId: v.id("users"),
+    expiresAt: v.number(),
+    maxUses: v.optional(v.number()),
+    useCount: v.number(),
+  })
+    .index("by_code", ["code"])
+    .index("by_orgId", ["orgId"]),
+
+  /** Admins and members belong to organizations. Owner created the org and cannot be removed. */
   orgMembers: defineTable({
     userId: v.id("users"),
     orgId: v.id("orgs"),
-    role: v.union(v.literal("admin"), v.literal("member")),
+    role: v.union(v.literal("owner"), v.literal("admin"), v.literal("member")),
   })
     .index("by_userId", ["userId"])
     .index("by_orgId", ["orgId"])

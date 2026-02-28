@@ -44,7 +44,8 @@ export const create = mutation({
         .unique(),
     ]);
 
-    const isAdmin = orgMembership?.role === "admin";
+    const isAdmin =
+      orgMembership?.role === "admin" || orgMembership?.role === "owner";
     const isMaintainerInGroup = mgMembership != null;
 
     if (!isAdmin && !isMaintainerInGroup) {

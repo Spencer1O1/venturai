@@ -35,8 +35,13 @@ export const create = mutation({
       )
       .unique();
 
-    if (membership?.role !== "admin") {
-      throw new Error("Must be admin of this org to create assets");
+    if (
+      membership?.role !== "admin" &&
+      membership?.role !== "owner"
+    ) {
+      throw new Error(
+        "Must be admin or owner of this org to create assets",
+      );
     }
     const group = await ctx.db.get(args.maintenanceGroupId);
     if (!group) throw new Error("Maintenance group not found");
@@ -87,8 +92,11 @@ export const updateTemplate = mutation({
       )
       .unique();
 
-    if (membership?.role !== "admin")
-      throw new Error("Must be admin of this org");
+    if (
+      membership?.role !== "admin" &&
+      membership?.role !== "owner"
+    )
+      throw new Error("Must be admin or owner of this org");
 
     if (args.templateId) {
       const tpl = await ctx.db.get(args.templateId);

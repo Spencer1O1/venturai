@@ -55,8 +55,11 @@ export const create = mutation({
       )
       .unique();
 
-    if (membership?.role !== "admin")
-      throw new Error("Must be admin of this org");
+    if (
+      membership?.role !== "admin" &&
+      membership?.role !== "owner"
+    )
+      throw new Error("Must be admin or owner of this org");
 
     const now = Date.now();
     return await ctx.db.insert("assessmentTemplates", {
@@ -94,8 +97,11 @@ export const update = mutation({
       )
       .unique();
 
-    if (membership?.role !== "admin")
-      throw new Error("Must be admin of this org");
+    if (
+      membership?.role !== "admin" &&
+      membership?.role !== "owner"
+    )
+      throw new Error("Must be admin or owner of this org");
 
     const updates: {
       name?: string;

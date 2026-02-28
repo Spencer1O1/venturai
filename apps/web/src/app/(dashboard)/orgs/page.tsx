@@ -8,7 +8,7 @@ import { useState } from "react";
 
 export default function OrgsPage() {
   const router = useRouter();
-  const orgs = useQuery(api.org_members.getOrgsUserIsAdminOf);
+  const orgs = useQuery(api.org_members.getOrgsUserBelongsTo);
   const createOrg = useMutation(api.orgs.create);
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
@@ -89,8 +89,8 @@ export default function OrgsPage() {
                     <span className="font-medium text-foreground">
                       {org.name}
                     </span>
-                    <span className="ml-2 text-sm text-foreground/60">
-                      Admin
+                    <span className="ml-2 text-sm text-foreground/60 capitalize">
+                      {org.role}
                     </span>
                   </Link>
                 </li>

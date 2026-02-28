@@ -24,7 +24,7 @@ export const getDefaultOrFirst = query({
 });
 
 /**
- * Create an org. The creator becomes an admin.
+ * Create an org. The creator becomes the owner.
  */
 export const create = mutation({
   args: { name: v.string() },
@@ -45,7 +45,7 @@ export const create = mutation({
     await ctx.db.insert("orgMembers", {
       userId,
       orgId,
-      role: "admin",
+      role: "owner",
     });
 
     return orgId;

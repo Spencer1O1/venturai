@@ -34,6 +34,7 @@ import type * as lib_ai_output_validator from "../lib/ai_output_validator.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as maintenance_groups from "../maintenance_groups.js";
 import type * as maintenance_records from "../maintenance_records.js";
+import type * as org_invites from "../org_invites.js";
 import type * as org_members from "../org_members.js";
 import type * as orgs from "../orgs.js";
 import type * as seed from "../seed.js";
@@ -76,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   "lib/utils": typeof lib_utils;
   maintenance_groups: typeof maintenance_groups;
   maintenance_records: typeof maintenance_records;
+  org_invites: typeof org_invites;
   org_members: typeof org_members;
   orgs: typeof orgs;
   seed: typeof seed;

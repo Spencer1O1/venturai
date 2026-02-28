@@ -60,7 +60,11 @@ export const isMaintenanceWorkerForAsset = query({
         .unique(),
     ]);
 
-    if (orgMembership?.role === "admin") return true;
+    if (
+      orgMembership?.role === "admin" ||
+      orgMembership?.role === "owner"
+    )
+      return true;
     if (mgMembership) return true;
     return false;
   },
@@ -96,7 +100,11 @@ export const getUserRoleForAsset = query({
         .unique(),
     ]);
 
-    if (orgMembership?.role === "admin") return "admin";
+    if (
+      orgMembership?.role === "admin" ||
+      orgMembership?.role === "owner"
+    )
+      return "admin";
     if (mgMembership) return "maintainer";
     return null;
   },
