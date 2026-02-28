@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "./ThemeToggle";
 
 const nav = [
   { href: "/", label: "Dashboard" },
   { href: "/work-items", label: "Work Items" },
-  { href: "/chat", label: "AI Chat" },
 ];
 
 export function Sidebar() {
@@ -14,9 +14,12 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-56 flex-col border-r border-card-border bg-card p-4">
-      <Link href="/" className="mb-8 flex items-center gap-2">
-        <span className="text-xl font-semibold tracking-tight text-foreground">Venturai</span>
-      </Link>
+      <div className="mb-6 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="text-xl font-semibold tracking-tight text-foreground">Venturai</span>
+        </Link>
+        <ThemeToggle />
+      </div>
       <nav className="flex flex-col gap-1">
         {nav.map(({ href, label }) => {
           const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
