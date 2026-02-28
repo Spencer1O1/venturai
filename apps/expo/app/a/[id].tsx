@@ -1,3 +1,5 @@
+import type { Id } from "@venturai/backend/dataModel";
+import { api } from "@venturai/backend";
 import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -7,9 +9,6 @@ import {
   Text,
   View,
 } from "react-native";
-
-import type { Id } from "@venturai/backend/dataModel";
-import { api } from "@venturai/backend";
 
 /**
  * Asset dashboard - /a/<assetId>.
@@ -55,7 +54,11 @@ export default function AssetDashboardScreen() {
   }
 
   return (
-    <AssetDashboardContent assetId={asset._id} asset={asset} router={router} />
+    <AssetDashboardContent
+      assetId={asset._id as Id<"assets">}
+      asset={asset}
+      router={router}
+    />
   );
 }
 
@@ -64,20 +67,39 @@ function AssetDashboardContent({
   asset,
   router,
 }: {
-  assetId: string;
+  assetId: Id<"assets">;
   asset: { name: string };
   router: ReturnType<typeof useRouter>;
 }) {
-  const isMaintenanceWorker = true; // TODO: auth_helpers.isMaintenanceWorkerForAsset
+  const isMaintenanceWorker = useQuery(
+    api.auth_helpers.isMaintenanceWorkerForAsset,
+    { assetId },
+  );
+
+  const showMaintenance = isMaintenanceWorker ?? false;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{asset.name}</Text>
       <Text style={styles.subtitle}>What would you like to do?</Text>
 
+      {!showMaintenance && (
+        <Pressable
+          style={[styles.button, styles.buttonSecondary]}
+          onPress={() => router.push("/sign-in" as never)}
+        >
+          <Text style={[styles.buttonTitle, styles.textSecondary]}>
+            Sign in for maintenance
+          </Text>
+          <Text style={[styles.buttonHint, styles.textSecondary]}>
+            Inspect, report problems, and record maintenance
+          </Text>
+        </Pressable>
+      )}
+
       <Pressable
         style={styles.button}
-        onPress={() => router.push(`/inspection/${assetId}`)}
+        onPress={() => router.push(`/inspection/${assetId}` as never)}
       >
         <Text style={styles.buttonTitle}>Inspect</Text>
         <Text style={styles.buttonHint}>
@@ -87,7 +109,7 @@ function AssetDashboardContent({
 
       <Pressable
         style={styles.button}
-        onPress={() => router.push(`/report/${assetId}`)}
+        onPress={() => router.push(`/report/${assetId}` as never)}
       >
         <Text style={styles.buttonTitle}>Report a problem</Text>
         <Text style={styles.buttonHint}>
@@ -95,7 +117,7 @@ function AssetDashboardContent({
         </Text>
       </Pressable>
 
-      {isMaintenanceWorker && (
+      {showMaintenance && (
         <>
           <Pressable
             style={[styles.button, styles.buttonMaintenance]}

@@ -1,3 +1,6 @@
+import { useAuthActions } from "@convex-dev/auth/react";
+import { api } from "@venturai/backend";
+import { useConvexAuth, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -6,6 +9,12 @@ const DEMO_ASSET_ID = "demo";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { isLoading, isAuthenticated } = useConvexAuth();
+  const { signOut } = useAuthActions();
+  const adminOrgs = useQuery(
+    api.org_members.getOrgsUserIsAdminOf,
+    isAuthenticated ? {} : "skip",
+  );
 
   return (
     <View style={styles.container}>
@@ -27,10 +36,35 @@ export default function HomeScreen() {
         For now, this opens a demo asset. Real NFC deep links to /a/[id].
       </Text>
 
-      <Pressable style={styles.signInButton} onPress={() => {}}>
-        <Text style={styles.signInText}>Sign in (maintenance / admin)</Text>
-      </Pressable>
-      <Text style={styles.comingSoon}>Coming soon</Text>
+      {isAuthenticated ? (
+        <>
+          {adminOrgs && adminOrgs.length > 0 && (
+            <Pressable
+              style={[styles.signInButton, styles.registerButton]}
+              onPress={() => router.push("/register" as never)}
+            >
+              <Text style={[styles.signInText, styles.registerText]}>
+                Register new asset
+              </Text>
+            </Pressable>
+          )}
+          <Pressable
+            style={styles.signInButton}
+            onPress={async () => {
+              await signOut();
+            }}
+          >
+            <Text style={styles.signInText}>Sign out</Text>
+          </Pressable>
+        </>
+      ) : (
+        <Pressable
+          style={styles.signInButton}
+          onPress={() => router.push("/sign-in" as never)}
+        >
+          <Text style={styles.signInText}>Sign in (maintenance / admin)</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -61,5 +95,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   signInText: { fontSize: 14, color: "#64748b" },
-  comingSoon: { fontSize: 11, color: "#cbd5e1", marginTop: 8 },
+  registerButton: {
+    borderColor: "#2563eb",
+    backgroundColor: "transparent",
+  },
+  registerText: { color: "#60a5fa" },
 });
