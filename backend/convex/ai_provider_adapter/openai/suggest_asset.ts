@@ -1,5 +1,6 @@
 "use node";
 
+import { getAssetSuggestionJsonSchema } from "../asset_suggestion_schema";
 import type { AssetSuggester, SuggestAssetPayload } from "../types";
 
 export const suggestAsset: AssetSuggester = async (
@@ -10,34 +11,25 @@ export const suggestAsset: AssetSuggester = async (
 
   const model = process.env.OPENAI_MODEL ?? "gpt-4o";
 
+  const groupIds = payload.maintenanceGroups.map((g) => g._id);
   const groupsList = payload.maintenanceGroups
-    .map((g) => `- ${g._id}: ${g.name}`)
+    .map((g) => `- ${g.name} [${g._id}]`)
     .join("\n");
+  const schema = getAssetSuggestionJsonSchema(groupIds);
 
-  const systemPrompt = `You are an industrial asset registration assistant. Analyze the photo of an asset and suggest registration details.
+  const systemPrompt = [
+    "You are an industrial asset registration assistant. Analyze the photo of an asset and suggest registration details.",
+    "",
+    "Rules:",
+    "- name: Human-readable asset name (e.g. Diaphragm Pump #1)",
+    "- maintenance_group_id: MUST be exactly one of the IDs from the maintenance groups list",
+    "- manufacturer, model, serial: Include only if visible/readable in the photo; omit otherwise",
+    "",
+    "Maintenance groups:",
+    groupsList,
+  ].join("\n");
 
-Return JSON ONLY. No markdown, no code fences.
-Schema:
-{
-  "name": "Human-readable asset name (e.g. Diaphragm Pump #1)",
-  "maintenance_group_id": "Exactly one of the IDs from the maintenance groups list below",
-  "manufacturer": "Manufacturer name if visible, else omit",
-  "model": "Model number if visible, else omit",
-  "serial": "Serial number if visible, else omit"
-}
-
-Maintenance groups (use exactly one _id for maintenance_group_id):
-${groupsList}`;
-
-  const userContent: Array<
-    | { type: "text"; text: string }
-    | { type: "image_url"; image_url: { url: string } }
-  > = [
-    { type: "text", text: "Analyze this asset photo and return the JSON." },
-    { type: "image_url", image_url: { url: payload.imageUrl } },
-  ];
-
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+  const resp = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -45,12 +37,33 @@ ${groupsList}`;
     },
     body: JSON.stringify({
       model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userContent },
+      input: [
+        {
+          role: "system",
+          content: [{ type: "input_text", text: systemPrompt }],
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              text: "Analyze this asset photo and return the structured suggestion.",
+            },
+            {
+              type: "input_image",
+              image_url: payload.imageUrl,
+            },
+          ],
+        },
       ],
-      response_format: { type: "json_object" },
-      max_tokens: 512,
+      text: {
+        format: {
+          type: "json_schema",
+          name: "AssetSuggestion",
+          schema,
+          strict: true,
+        },
+      },
     }),
   });
 
@@ -60,10 +73,11 @@ ${groupsList}`;
   }
 
   const data = (await resp.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
+    output?: Array<{ content?: Array<{ type: string; text?: string }> }>;
   };
-  const text = data.choices?.[0]?.message?.content;
-  if (!text) throw new Error("OpenAI response missing content");
+  const content = (data.output ?? []).flatMap((o) => o.content ?? []);
+  const text = content.find((c) => c.type === "output_text")?.text;
+  if (!text) throw new Error("OpenAI response missing output_text");
 
   let raw: unknown;
   try {
