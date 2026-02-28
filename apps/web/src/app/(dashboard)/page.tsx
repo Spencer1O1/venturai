@@ -1,15 +1,10 @@
 "use client";
 
-import { RiskHeatmapPill } from "@/components/RiskHeatmapCell";
+import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
 import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { getRiskTier } from "@/lib/risk";
 import { api } from "@venturai/backend";
 import type { Id } from "@venturai/backend/dataModel";
-import { api } from "@venturai/backend";
-import type { Id } from "@venturai/backend/dataModel";
-//import { DataQueryPanel } from "@/components/DataQueryPanel";
-import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
-import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 
@@ -45,17 +40,6 @@ function CalendarIcon() {
     </svg>
   );
 }
-function RefreshIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-      <path d="M16 21h5v-5" />
-    </svg>
-  );
-}
-
 export default function DashboardPage() {
   const { orgId, orgs } = useSelectedOrg();
   const assets = useQuery(
@@ -75,16 +59,7 @@ export default function DashboardPage() {
     );
   }
 
-  const highRiskItems = (openWorkItems ?? []).slice(0, 5);
   const totalAssets = assets?.length ?? 0;
-  const issuesFound = openWorkItems?.length ?? 0;
-  const issuesRate = totalAssets > 0 ? Math.round((issuesFound / totalAssets) * 100) : 0;
-  const highRiskCount = assets?.filter((a) => a.riskScore > 75).length ?? 0;
-  const avgRiskScoreNum = totalAssets > 0
-    ? (assets ?? []).reduce((s, a) => s + a.riskScore, 0) / totalAssets
-    : 0;
-  const avgRiskScore = avgRiskScoreNum.toFixed(1);
-
   const riskDistribution = (assets ?? []).reduce(
     (acc, a) => {
       const tier = getRiskTier(a.riskScore);
@@ -199,15 +174,23 @@ export default function DashboardPage() {
                   </td>
                 </tr>
               ))}
-              {highRiskItems.length === 0 && (
-                <li className="text-sm text-foreground/60">No recent activity</li>
+              {(assets ?? []).length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-6 text-center text-sm text-foreground/60"
+                  >
+                    No assets found for this organization.
+                  </td>
+                </tr>
               )}
-            </ul>
-          </div>
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        {/* Right column */}
-        <div className="flex flex-col gap-6">
+      {/* Right column */}
+      <div className="flex w-full max-w-sm flex-col gap-6 lg:w-80">
           {/* Risk Distribution */}
           <div className="rounded-xl border border-card-border bg-card p-5">
             <h2 className="mb-4 font-semibold text-foreground">Risk Distribution</h2>
@@ -317,7 +300,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }
