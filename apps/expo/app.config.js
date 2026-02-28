@@ -6,6 +6,7 @@ const iconPath = path.resolve(projectRoot, "assets/images/icon.png");
 
 // Plugin: copy icon to splashscreen_logo (required when splash image disabled)
 const withSplashLogoDrawable = require("./plugins/withSplashLogoDrawable.cjs");
+const withNfcIntentFilter = require("./plugins/withNfcIntentFilter.cjs");
 
 /** @type {import('expo/config').ExpoConfig} */
 const config = {
@@ -44,6 +45,7 @@ const config = {
       },
     ],
     [withSplashLogoDrawable, { iconPath }],
+    withNfcIntentFilter,
   ],
   experiments: { typedRoutes: true, reactCompiler: true },
   extra: {

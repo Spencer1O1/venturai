@@ -1,19 +1,20 @@
-import {
-  cancelNfcScan,
-  initNfc,
-  parseAssetIdFromUrl,
-  readUrlFromNfcTag,
-} from "../lib/nfc";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
+import {
+  cancelNfcScan,
+  initNfc,
+  parseAssetIdFromUrl,
+  startNfcUrlReader,
+  stopNfcUrlReader,
+} from "../lib/nfc";
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -22,43 +23,62 @@ export default function ScanScreen() {
   >("checking");
   const mountedRef = useRef(true);
 
-  const doScan = useCallback(async () => {
-    setStatus("scanning");
-    const url = await readUrlFromNfcTag();
+  const handleUrl = useCallback(
+    (url: string) => {
+      if (!mountedRef.current) return;
+      const assetId = parseAssetIdFromUrl(url);
+      if (assetId) {
+        setStatus("success");
+        router.replace(`/a/${assetId}`);
+      } else {
+        // Tag has URL but not a Venturai asset - open register
+        setStatus("success");
+        router.replace("/register");
+      }
+    },
+    [router],
+  );
+
+  const handleTagWithoutUrl = useCallback(() => {
     if (!mountedRef.current) return;
-    if (!url) {
-      setStatus("error");
-      return;
-    }
-    const assetId = parseAssetIdFromUrl(url);
-    if (!assetId) {
-      setStatus("error");
-      Alert.alert(
-        "Invalid tag",
-        "This tag does not contain a Venturai asset URL.",
-      );
-      return;
-    }
     setStatus("success");
-    router.replace(`/a/${assetId}` as never);
+    router.replace("/register");
   }, [router]);
 
-  useEffect(() => {
-    mountedRef.current = true;
-    initNfc().then((result: "checking" | "supported" | "unsupported" | "disabled") => {
-      if (!mountedRef.current) return;
-      if (result === "supported") {
-        setStatus("ready");
-        doScan();
-      } else {
-        setStatus("unsupported");
-      }
-    });
-    return () => {
-      mountedRef.current = false;
-      cancelNfcScan();
-    };
-  }, [doScan]);
+  const handleError = useCallback(() => {
+    if (mountedRef.current) setStatus("error");
+  }, []);
+
+  const startReader = useCallback(async () => {
+    setStatus("scanning");
+    await stopNfcUrlReader();
+    await startNfcUrlReader(
+      handleUrl,
+      (err) => {
+        console.error("NFC reader error:", err);
+        handleError();
+      },
+      handleTagWithoutUrl,
+    );
+  }, [handleUrl, handleError, handleTagWithoutUrl]);
+
+  useFocusEffect(
+    useCallback(() => {
+      mountedRef.current = true;
+      initNfc().then(async (result) => {
+        if (!mountedRef.current) return;
+        if (result !== "supported") {
+          setStatus("unsupported");
+          return;
+        }
+        await startReader();
+      });
+      return () => {
+        mountedRef.current = false;
+        stopNfcUrlReader();
+      };
+    }, [startReader]),
+  );
 
   if (status === "unsupported") {
     return (
@@ -88,7 +108,7 @@ export default function ScanScreen() {
         <ActivityIndicator size="large" style={styles.spinner} />
       )}
       {status === "error" && (
-        <Pressable style={styles.button} onPress={doScan}>
+        <Pressable style={styles.button} onPress={startReader}>
           <Text style={styles.buttonText}>Retry</Text>
         </Pressable>
       )}

@@ -3,7 +3,7 @@ import type { Id } from "@venturai/backend/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,17 +15,11 @@ import {
   View,
 } from "react-native";
 
-import {
-  assetUrl,
-  cancelNfcScan,
-  initNfc,
-  waitForNfcTag,
-  writeUrlToNfcTag,
-} from "../../lib/nfc";
+import { assetUrl, initNfc, writeUrlToNfcTag } from "../../lib/nfc";
 import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
 
 type Step =
-  | "nfc"
+  | "photo"
   | "suggesting"
   | "edit"
   | "creating"
@@ -36,11 +30,15 @@ type Step =
 function NfcWriteStep({
   assetId,
   onSuccess,
+  onSkip,
 }: {
   assetId: string;
   onSuccess: () => void;
+  onSkip?: () => void;
 }) {
-  const [status, setStatus] = useState<"waiting" | "success" | "error">("waiting");
+  const [status, setStatus] = useState<"waiting" | "success" | "error">(
+    "waiting",
+  );
   const url = assetUrl(assetId);
 
   const attemptWrite = useCallback(async () => {
@@ -74,22 +72,32 @@ function NfcWriteStep({
           <Text style={styles.buttonText}>Retry</Text>
         </Pressable>
       )}
+      {onSkip && (
+        <Pressable
+          style={[styles.button, styles.buttonOutline]}
+          onPress={onSkip}
+        >
+          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+            Skip for now
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
 
 /**
  * Register a new asset.
- * Flow: 1) Scan NFC tag 2) Take photo (camera opens immediately after scan)
- * 3) AI suggests details 4) User edits 5) Create 6) Optional template
- * After creation, write venturai.app/a/<assetId> to the NFC tag.
+ * Flow: 1) Take photo 2) AI suggests details 3) User edits 4) Create
+ * 5) Optional template 6) Scan NFC tag to write venturai.app/a/<assetId>
  */
 export default function RegisterAssetScreen() {
   const router = useRouter();
-  const nfcAbortedRef = useRef(false);
 
-  const [step, setStep] = useState<Step>("nfc");
-  const [nfcStatus, setNfcStatus] = useState<"checking" | "supported" | "unsupported">("checking");
+  const [step, setStep] = useState<Step>("photo");
+  const [nfcStatus, setNfcStatus] = useState<
+    "checking" | "supported" | "unsupported"
+  >("checking");
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
@@ -131,7 +139,6 @@ export default function RegisterAssetScreen() {
     });
 
     if (result.canceled || !result.assets[0]) {
-      setStep("nfc");
       return;
     }
 
@@ -155,14 +162,10 @@ export default function RegisterAssetScreen() {
       });
       setStep("edit");
     } catch {
-      setStep("nfc");
+      setStep("photo");
       Alert.alert("Error", "Could not analyze photo. Please try again.");
     }
-  }, [
-    adminOrgs,
-    generateUploadUrl,
-    suggestFromPhoto,
-  ]);
+  }, [adminOrgs, generateUploadUrl, suggestFromPhoto]);
 
   // Initialize NFC on mount
   useEffect(() => {
@@ -176,25 +179,6 @@ export default function RegisterAssetScreen() {
       mounted = false;
     };
   }, []);
-
-  // Start NFC scan when on nfc step and NFC is supported. When tag detected → open camera
-  useEffect(() => {
-    if (step !== "nfc" || nfcStatus !== "supported") return;
-
-    let mounted = true;
-    nfcAbortedRef.current = false;
-
-    waitForNfcTag().then((detected) => {
-      if (!mounted || nfcAbortedRef.current || !detected) return;
-      openCameraAndContinue();
-    });
-
-    return () => {
-      mounted = false;
-      nfcAbortedRef.current = true;
-      cancelNfcScan();
-    };
-  }, [step, nfcStatus, openCameraAndContinue]);
 
   if (adminOrgs === undefined) {
     return (
@@ -210,53 +194,32 @@ export default function RegisterAssetScreen() {
         <Text style={styles.subtitle}>
           Sign in and create an org, or have an admin add you to one.
         </Text>
-        <Pressable style={styles.button} onPress={() => router.back()}>
+        <Pressable
+          style={styles.button}
+          onPress={() => router.replace("/" as never)}
+        >
           <Text style={styles.buttonText}>Back</Text>
         </Pressable>
       </View>
     );
   }
 
-  if (step === "nfc") {
-    const isChecking = nfcStatus === "checking";
-
-    if (nfcStatus === "unsupported") {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.title}>NFC required</Text>
-          <Text style={styles.subtitle}>
-            This device does not support NFC, or NFC is disabled. Asset
-            registration requires NFC to read and write tags. Use a development
-            build on a supported device.
-          </Text>
-          <Pressable
-            style={[styles.button, styles.buttonOutline]}
-            onPress={() => router.back()}
-          >
-            <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
-              Back
-            </Text>
-          </Pressable>
-        </View>
-      );
-    }
-
+  if (step === "photo") {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Register asset</Text>
         <Text style={styles.subtitle}>
-          {isChecking
-            ? "Checking NFC..."
-            : "Hold your phone near the NFC tag. The camera will open when the tag is detected."}
+          Take a photo of the asset. AI will suggest details, then you can edit
+          and create the asset. You'll write the tag at the end.
         </Text>
 
-        {isChecking && (
-          <ActivityIndicator size="large" style={styles.nfcSpinner} />
-        )}
+        <Pressable style={styles.button} onPress={openCameraAndContinue}>
+          <Text style={styles.buttonText}>Take photo</Text>
+        </Pressable>
 
         <Pressable
           style={[styles.button, styles.buttonOutline]}
-          onPress={() => router.back()}
+          onPress={() => router.replace("/" as never)}
         >
           <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
             Cancel
@@ -418,10 +381,31 @@ export default function RegisterAssetScreen() {
   }
 
   if (step === "write" && createdAssetId) {
+    if (nfcStatus === "unsupported") {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>NFC required</Text>
+          <Text style={styles.subtitle}>
+            This device does not support NFC, or NFC is disabled. Hold the tag
+            near your phone to write the asset URL. Use a development build on a
+            supported device.
+          </Text>
+          <Pressable
+            style={[styles.button, styles.buttonOutline]}
+            onPress={() => router.replace("/" as never)}
+          >
+            <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+              Skip (asset created)
+            </Text>
+          </Pressable>
+        </View>
+      );
+    }
     return (
       <NfcWriteStep
         assetId={createdAssetId}
         onSuccess={() => setStep("done")}
+        onSkip={() => setStep("done")}
       />
     );
   }
@@ -430,8 +414,8 @@ export default function RegisterAssetScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Asset registered</Text>
       <Text style={styles.subtitle}>
-        The asset URL has been written to the NFC tag. Scanning the tag will open
-        the asset dashboard.
+        Open the asset dashboard to view inspections and details. If you wrote
+        the tag, scanning it will open this asset.
       </Text>
       <Pressable
         style={styles.button}
@@ -476,7 +460,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   buttonSecondary: { backgroundColor: "#64748b" },
-  buttonOutline: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#e2e8f0" },
+  buttonOutline: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   buttonTextSecondary: { color: "#64748b" },
   groupList: {
