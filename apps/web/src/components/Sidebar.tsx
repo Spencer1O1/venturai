@@ -6,12 +6,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useSelectedOrg } from "@/hooks/useSelectedOrg";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 
-import { OrgSelector } from "./OrgSelector";
 import { ThemeToggle } from "./ThemeToggle";
 
 function DashboardIcon() {
@@ -110,14 +105,17 @@ export function Sidebar() {
         <ThemeToggle />
       </div>
       <nav className="flex flex-1 flex-col gap-1">
-        {nav.map(({ href, label }) => {
+        {nav.map(({ href, label, icon: Icon, badgeKey }) => {
           const isActive =
             href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const navHref = appendOrg(href);
+          const badge = badgeKey === "work-items" ? openActionCount : null;
+
           return (
             <Link
               key={href}
-              href={href}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+              href={navHref}
+              className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                 isActive
                   ? "border-l-2 border-l-primary bg-primary/15 text-primary"
                   : "border-l-2 border-l-transparent text-foreground/70 hover:bg-card-border/50 hover:text-foreground"
