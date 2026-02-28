@@ -5,6 +5,7 @@ import { assetDocValidator } from "./helpers";
 
 /**
  * Get asset by ID.
+ * The NFC tag stores the asset URL (e.g. venturai.app/a/<assetId>); when scanned, use this to load the asset.
  */
 export const getById = query({
   args: { assetId: v.id("assets") },

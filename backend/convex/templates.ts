@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 
+import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 const additionalQuestionValidator = v.object({
@@ -31,7 +32,7 @@ export const getById = query({
 });
 
 /**
- * Create an assessment template.
+ * Create an assessment template. Caller must be admin of the org.
  */
 export const create = mutation({
   args: {
@@ -42,8 +43,26 @@ export const create = mutation({
   },
   returns: v.id("assessmentTemplates"),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const userId = identity.subject as Id<"users">;
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
     const org = await ctx.db.get(args.orgId);
     if (!org) throw new Error("Org not found");
+
+    const isAdmin =
+      user.role === "admin" ||
+      (await ctx.db
+        .query("orgMembers")
+        .withIndex("by_userId_and_orgId", (q) =>
+          q.eq("userId", userId).eq("orgId", args.orgId),
+        )
+        .unique())?.role === "admin";
+
+    if (!isAdmin) throw new Error("Must be admin of this org");
 
     const now = Date.now();
     return await ctx.db.insert("assessmentTemplates", {
@@ -53,5 +72,60 @@ export const create = mutation({
       additionalQuestions: args.additionalQuestions,
       createdAt: now,
     });
+  },
+});
+
+/**
+ * Update an assessment template. Caller must be admin of the org.
+ */
+export const update = mutation({
+  args: {
+    templateId: v.id("assessmentTemplates"),
+    name: v.optional(v.string()),
+    photoDescriptions: v.optional(v.array(v.string())),
+    additionalQuestions: v.optional(v.array(additionalQuestionValidator)),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const userId = identity.subject as Id<"users">;
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
+    const template = await ctx.db.get(args.templateId);
+    if (!template) throw new Error("Template not found");
+
+    const isAdmin =
+      user.role === "admin" ||
+      (await ctx.db
+        .query("orgMembers")
+        .withIndex("by_userId_and_orgId", (q) =>
+          q.eq("userId", userId).eq("orgId", template.orgId),
+        )
+        .unique())?.role === "admin";
+
+    if (!isAdmin) throw new Error("Must be admin of this org");
+
+    const updates: {
+      name?: string;
+      photoDescriptions?: string[];
+      additionalQuestions?: Array<{
+        key: string;
+        label: string;
+        type: "text" | "number" | "boolean";
+      }>;
+    } = {};
+    if (args.name !== undefined) updates.name = args.name;
+    if (args.photoDescriptions !== undefined)
+      updates.photoDescriptions = args.photoDescriptions;
+    if (args.additionalQuestions !== undefined)
+      updates.additionalQuestions = args.additionalQuestions;
+
+    if (Object.keys(updates).length > 0) {
+      await ctx.db.patch(args.templateId, updates);
+    }
+    return null;
   },
 });

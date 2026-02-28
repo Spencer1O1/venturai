@@ -92,7 +92,6 @@ export const createWithAI = action({
       imageUrls,
       assetMetadata: {
         assetName: context.asset.name,
-        assetType: context.asset.type,
         manufacturer: context.asset.manufacturer,
         model: context.asset.model,
         locationText: context.asset.locationText,

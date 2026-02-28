@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-/** Demo asset ID for "Scan NFC Tag" when no real scan is available */
+/** Placeholder for "Scan NFC Tag" when no real NFC - use a real asset ID from seed for testing */
 const DEMO_ASSET_ID = "demo";
 
 export default function HomeScreen() {

@@ -17,7 +17,7 @@ export type AnalyzePayload = {
   imageUrls: string[];
   assetMetadata: {
     assetName: string;
-    assetType: string;
+    assetType?: string;
     manufacturer?: string;
     model?: string;
     locationText?: string;
@@ -37,5 +37,19 @@ export type AnalyzePayload = {
 export type AIAnalyzer = (
   payload: AnalyzePayload,
 ) => Promise<AIAnalyzerResponse>;
+
+export type SuggestAssetPayload = {
+  imageUrl: string;
+  maintenanceGroups: Array<{ _id: string; name: string }>;
+};
+
+export type AssetSuggesterResponse = {
+  raw: unknown;
+  meta: AIMetadata;
+};
+
+export type AssetSuggester = (
+  payload: SuggestAssetPayload,
+) => Promise<AssetSuggesterResponse>;
 
 export type { AIOutput };

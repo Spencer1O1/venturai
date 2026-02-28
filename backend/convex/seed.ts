@@ -47,7 +47,6 @@ export const seed = mutation({
       maintenanceGroupId,
       templateId,
       name: "Diaphragm Pump #1",
-      type: "Diaphragm Pump",
       locationText: "Bay A, North wall",
       manufacturer: "Example Mfg",
       model: "DP-100",

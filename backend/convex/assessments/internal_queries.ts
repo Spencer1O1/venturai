@@ -13,7 +13,6 @@ export const loadContext = internalQuery({
     asset: v.object({
       _id: v.id("assets"),
       name: v.string(),
-      type: v.string(),
       manufacturer: v.optional(v.string()),
       model: v.optional(v.string()),
       locationText: v.optional(v.string()),
@@ -74,7 +73,6 @@ export const loadContext = internalQuery({
       asset: {
         _id: asset._id,
         name: asset.name,
-        type: asset.type,
         manufacturer: asset.manufacturer,
         model: asset.model,
         locationText: asset.locationText,

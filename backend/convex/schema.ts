@@ -26,6 +26,16 @@ export default defineSchema({
     .index("email", ["email"])
     .index("phone", ["phone"]),
 
+  /** Admins and members belong to organizations */
+  orgMembers: defineTable({
+    userId: v.id("users"),
+    orgId: v.id("orgs"),
+    role: v.union(v.literal("admin"), v.literal("member")),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_orgId", ["orgId"])
+    .index("by_userId_and_orgId", ["userId", "orgId"]),
+
   /** Maintainers are assigned to specific maintenance groups */
   maintenanceGroupMembers: defineTable({
     userId: v.id("users"),
@@ -62,7 +72,6 @@ export default defineSchema({
     maintenanceGroupId: v.id("maintenanceGroups"),
     templateId: v.optional(v.id("assessmentTemplates")),
     name: v.string(),
-    type: v.string(),
     locationText: v.optional(v.string()),
     externalId: v.optional(v.string()),
     externalSystem: v.optional(v.string()),

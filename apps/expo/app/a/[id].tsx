@@ -1,31 +1,83 @@
+import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import type { Id } from "@venturai/backend/dataModel";
+import { api } from "@venturai/backend";
 
 /**
- * Asset dashboard - NFC deep link route /a/<assetId>.
- * Flows:
- * - Inspect: routine assessment (photos, info)
- * - Report a problem: problem assessment (photo of issue, info)
- * - Report maintenance: maintenance workers only - update work item status
- * - View: maintenance workers only - history and most recent report
- *
- * TODO: Role check - only show Report maintenance & View to users registered
- * as maintenance workers in this asset's maintenance group.
+ * Asset dashboard - /a/<assetId>.
+ * The NFC tag stores the asset URL (venturai.app/a/<assetId>); when scanned, this route loads the asset.
  */
-export default function AssetDashboard() {
+export default function AssetDashboardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const asset = useQuery(
+    api.assets.queries.getById,
+    id ? { assetId: id as Id<"assets"> } : "skip",
+  );
+  const adminOrgs = useQuery(api.org_members.getOrgsUserIsAdminOf);
 
-  const isMaintenanceWorker = true; // TODO: fetch from auth / maintenance group membership
+  if (asset === undefined) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (asset === null) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Asset not found</Text>
+        <Text style={styles.subtitle}>
+          The tag may point to a deleted asset or be unprogrammed.
+        </Text>
+        {adminOrgs?.length ? (
+          <Pressable
+            style={styles.button}
+            onPress={() => router.push("/register" as never)}
+          >
+            <Text style={styles.buttonText}>Register new asset</Text>
+          </Pressable>
+        ) : null}
+        <Pressable style={[styles.button, styles.buttonSecondary]} onPress={() => router.back()}>
+          <Text style={styles.buttonText}>Back</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  return (
+    <AssetDashboardContent assetId={asset._id} asset={asset} router={router} />
+  );
+}
+
+function AssetDashboardContent({
+  assetId,
+  asset,
+  router,
+}: {
+  assetId: string;
+  asset: { name: string };
+  router: ReturnType<typeof useRouter>;
+}) {
+  const isMaintenanceWorker = true; // TODO: auth_helpers.isMaintenanceWorkerForAsset
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Asset</Text>
+      <Text style={styles.title}>{asset.name}</Text>
       <Text style={styles.subtitle}>What would you like to do?</Text>
 
       <Pressable
         style={styles.button}
-        onPress={() => router.push(`/inspection/${id}`)}
+        onPress={() => router.push(`/inspection/${assetId}`)}
       >
         <Text style={styles.buttonTitle}>Inspect</Text>
         <Text style={styles.buttonHint}>
@@ -35,7 +87,7 @@ export default function AssetDashboard() {
 
       <Pressable
         style={styles.button}
-        onPress={() => router.push(`/report/${id}`)}
+        onPress={() => router.push(`/report/${assetId}`)}
       >
         <Text style={styles.buttonTitle}>Report a problem</Text>
         <Text style={styles.buttonHint}>
@@ -48,9 +100,7 @@ export default function AssetDashboard() {
           <Pressable
             style={[styles.button, styles.buttonMaintenance]}
             onPress={() =>
-              router.push(
-                `/maintenance/${id}` as Parameters<typeof router.push>[0],
-              )
+              router.push(`/maintenance/${assetId}` as Parameters<typeof router.push>[0])
             }
           >
             <Text style={styles.buttonTitle}>Report maintenance</Text>
@@ -62,7 +112,7 @@ export default function AssetDashboard() {
           <Pressable
             style={[styles.button, styles.buttonSecondary]}
             onPress={() =>
-              router.push(`/view/${id}` as Parameters<typeof router.push>[0])
+              router.push(`/view/${assetId}` as Parameters<typeof router.push>[0])
             }
           >
             <Text style={[styles.buttonTitle, styles.textSecondary]}>View</Text>
@@ -77,6 +127,7 @@ export default function AssetDashboard() {
 }
 
 const styles = StyleSheet.create({
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   container: { flex: 1, padding: 24 },
   title: { fontSize: 22, fontWeight: "600", marginBottom: 4 },
   subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
@@ -90,5 +141,6 @@ const styles = StyleSheet.create({
   buttonSecondary: { backgroundColor: "#64748b" },
   buttonTitle: { color: "#fff", fontSize: 16, fontWeight: "600" },
   buttonHint: { color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 4 },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   textSecondary: { color: "#fff" },
 });

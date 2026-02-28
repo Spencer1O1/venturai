@@ -30,7 +30,7 @@ function buildUserMessage(payload: AnalyzePayload): string {
   const lines: string[] = [
     "## Asset",
     `Name: ${assetMetadata.assetName}`,
-    `Type: ${assetMetadata.assetType}`,
+    ...(assetMetadata.assetType ? [`Type: ${assetMetadata.assetType}`] : []),
     ...(assetMetadata.manufacturer
       ? [`Manufacturer: ${assetMetadata.manufacturer}`]
       : []),

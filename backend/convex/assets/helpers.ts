@@ -7,7 +7,6 @@ export const assetDocValidator = v.object({
   maintenanceGroupId: v.id("maintenanceGroups"),
   templateId: v.optional(v.id("assessmentTemplates")),
   name: v.string(),
-  type: v.string(),
   locationText: v.optional(v.string()),
   externalId: v.optional(v.string()),
   externalSystem: v.optional(v.string()),

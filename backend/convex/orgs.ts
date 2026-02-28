@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 
+import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 /**
@@ -23,16 +24,31 @@ export const getDefaultOrFirst = query({
 });
 
 /**
- * Create an org.
+ * Create an org. The creator becomes an admin.
  */
 export const create = mutation({
   args: { name: v.string() },
   returns: v.id("orgs"),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const userId = identity.subject as Id<"users">;
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
     const now = Date.now();
-    return await ctx.db.insert("orgs", {
+    const orgId = await ctx.db.insert("orgs", {
       name: args.name,
       createdAt: now,
     });
+
+    await ctx.db.insert("orgMembers", {
+      userId,
+      orgId,
+      role: "admin",
+    });
+
+    return orgId;
   },
 });
