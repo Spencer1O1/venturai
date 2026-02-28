@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 /**
  * View history and most recent report (maintenance workers).
- * TODO: Wire to Convex - assessments.listByAsset, workItems.listOpenByAsset
+ * TODO: Wire to Convex - api.assessments.queries.listByAsset, workItems.listOpenByAsset
  */
 export default function ViewHistoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -12,7 +12,7 @@ import {
 /**
  * Inspect flow - routine assessment.
  * Take photos (from template), enter information, submit.
- * TODO: Wire to Convex - templates.getById, storage upload, assessments.createWithAI
+ * TODO: Wire to Convex - templates.getById, storage upload, api.assessments.actions.createWithAI
  */
 export default function InspectionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

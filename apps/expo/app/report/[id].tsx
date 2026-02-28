@@ -12,7 +12,7 @@ import {
 /**
  * Report a problem flow - problem assessment.
  * Take photo of problem, enter details, submit.
- * TODO: Wire to Convex - storage upload, assessments.createWithAI (intent: problem)
+ * TODO: Wire to Convex - storage upload, api.assessments.actions.createWithAI (intent: problem)
  */
 export default function ReportProblemScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

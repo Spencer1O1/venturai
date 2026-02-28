@@ -2,6 +2,8 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+import { aiOutputValidator } from "./lib/ai_output_validator";
+
 // Additional question for assessment templates
 const additionalQuestionValidator = v.object({
   key: v.string(),
@@ -79,17 +81,16 @@ export default defineSchema({
   assessments: defineTable({
     assetId: v.id("assets"),
     intent: v.union(v.literal("routine"), v.literal("problem")),
-    createdByRole: v.union(
-      v.literal("user"),
-      v.literal("inspector"),
-      v.literal("maintainer"),
+    /** If undefined, created by anonymous/unauthenticated user */
+    createdByRole: v.optional(
+      v.union(v.literal("admin"), v.literal("maintainer")),
     ),
     createdByUserId: v.optional(v.string()),
     photoStorageIds: v.array(v.id("_storage")),
     photoDescriptions: v.array(v.string()),
     answers: v.record(v.string(), v.union(v.string(), v.number(), v.boolean())),
     notes: v.optional(v.string()),
-    aiOutput: v.optional(v.any()),
+    aiOutput: v.optional(aiOutputValidator),
     createdAt: v.number(),
   })
     .index("by_assetId", ["assetId"])

@@ -11,40 +11,54 @@
 
 import { v } from "convex/values";
 
-import { internal } from "./_generated/api";
-import { action } from "./_generated/server";
-import { ANALYZERS } from "./ai_provider_adapter";
-import { analyze } from "./ai_provider_adapter/analyze";
+import { api, internal } from "../_generated/api";
+
+const internalAny = internal as Record<string, Record<string, unknown>>;
+
+function requireInternal(path: string): Record<string, unknown> {
+  const mod = internalAny[path];
+  if (!mod) throw new Error(`Internal module "${path}" not found`);
+  return mod;
+}
+
+const im = requireInternal("assessments/internal_mutations");
+const iq = requireInternal("assessments/internal_queries");
+
+import { action } from "../_generated/server";
+import { ANALYZERS } from "../ai_provider_adapter";
+import { analyze } from "../ai_provider_adapter/analyze";
+import { aiOutputValidator } from "../lib/ai_output_validator";
 
 export const createWithAI = action({
   args: {
     assetId: v.id("assets"),
     intent: v.union(v.literal("routine"), v.literal("problem")),
-    createdByRole: v.union(
-      v.literal("user"),
-      v.literal("inspector"),
-      v.literal("maintainer"),
-    ),
-    createdByUserId: v.optional(v.string()),
     photoStorageIds: v.array(v.id("_storage")),
     photoDescriptions: v.array(v.string()),
     answers: v.record(v.string(), v.union(v.string(), v.number(), v.boolean())),
     notes: v.optional(v.string()),
   },
   returns: v.object({
-    aiOutput: v.any(),
+    aiOutput: aiOutputValidator,
     riskLoad: v.number(),
     riskScore: v.number(),
     lastAssessedAt: v.number(),
   }),
   handler: async (ctx, args) => {
+    const user = await ctx.runQuery(api.auth_helpers.getCurrentUser);
+    const createdByRole =
+      user?.role === "admin" || user?.role === "maintainer"
+        ? user.role
+        : undefined;
+    const createdByUserId = user?._id;
+
     const assessmentId = await ctx.runMutation(
-      (internal as any).assessments_internal.createPlaceholder,
+      im.createPlaceholder as Parameters<typeof ctx.runMutation>[0],
       {
         assetId: args.assetId,
         intent: args.intent,
-        createdByRole: args.createdByRole,
-        createdByUserId: args.createdByUserId,
+        createdByRole,
+        createdByUserId,
         photoStorageIds: args.photoStorageIds,
         photoDescriptions: args.photoDescriptions,
         answers: args.answers,
@@ -53,10 +67,10 @@ export const createWithAI = action({
     );
 
     const [imageUrls, context] = await Promise.all([
-      ctx.runQuery((internal as any).storage.getImageUrls, {
+      ctx.runQuery(internal.storage.getImageUrls, {
         storageIds: args.photoStorageIds,
       }),
-      ctx.runQuery((internal as any).assessments_internal.loadContext, {
+      ctx.runQuery(iq.loadContext as Parameters<typeof ctx.runQuery>[0], {
         assetId: args.assetId,
       }),
     ]);
@@ -98,7 +112,7 @@ export const createWithAI = action({
     const { result: aiOutput } = await analyze(ANALYZERS.OpenAI, payload);
 
     await ctx.runMutation(
-      (internal as any).assessments_internal.finalizeWithAI,
+      im.finalizeWithAI as Parameters<typeof ctx.runMutation>[0],
       {
         assessmentId,
         assetId: args.assetId,
@@ -107,7 +121,7 @@ export const createWithAI = action({
     );
 
     const asset = await ctx.runQuery(
-      (internal as any).assessments_internal.getAssetRisk,
+      iq.getAssetRisk as Parameters<typeof ctx.runQuery>[0],
       {
         assetId: args.assetId,
       },
