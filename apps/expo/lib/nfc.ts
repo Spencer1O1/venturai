@@ -147,12 +147,14 @@ export function readUrlFromNfcTag(): Promise<string | null> {
 }
 
 /**
- * Parse asset ID from a Venturai asset URL (e.g. https://venturai.app/a/xyz → xyz).
- * Matches /a/<id> pattern in any venturai URL.
+ * Parse asset ID from a Venturai asset URL.
+ * Supports: https://venturai.app/a/xyz, venturai://a/xyz
  */
 export function parseAssetIdFromUrl(url: string): string | null {
-  const match = url.match(/\/a\/([^/?#]+)/);
-  return (match?.[1] ?? null) as string | null;
+  const httpsMatch = url.match(/\/a\/([^/?#]+)/);
+  if (httpsMatch) return httpsMatch[1] ?? null;
+  const venturaiMatch = url.match(/^venturai:\/\/a\/([^/?#]+)/);
+  return venturaiMatch?.[1] ?? null;
 }
 
 /**
@@ -226,9 +228,14 @@ export async function getNfcLaunchDestination(): Promise<
   }
 }
 
-/** Build the asset dashboard URL for a given asset ID */
+/** Web URL for sharing (opens in browser). */
 export function assetUrl(assetId: string): string {
   return `${APP_URL.replace(/\/$/, "")}/a/${assetId}`;
+}
+
+/** NFC tag URL - venturai:// scheme so only the app handles it, not the browser. */
+export function nfcAssetUrl(assetId: string): string {
+  return `venturai://a/${assetId}`;
 }
 
 /** Cancel any active NFC scan (requestTechnology or registerTagEvent) */

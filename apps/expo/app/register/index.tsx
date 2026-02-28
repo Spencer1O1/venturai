@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 
-import { assetUrl, initNfc, writeUrlToNfcTag } from "../../lib/nfc";
+import { initNfc, nfcAssetUrl, writeUrlToNfcTag } from "../../lib/nfc";
 import { uploadPhotoFromUri } from "../../lib/uploadPhoto";
 
 type Step =
@@ -40,14 +40,14 @@ function NfcWriteStep({
   const [status, setStatus] = useState<"waiting" | "success" | "error">(
     "waiting",
   );
-  const url = assetUrl(assetId);
+  const nfcUrl = nfcAssetUrl(assetId);
 
   const attemptWrite = useCallback(async () => {
     setStatus("waiting");
-    const ok = await writeUrlToNfcTag(url);
+    const ok = await writeUrlToNfcTag(nfcUrl);
     setStatus(ok ? "success" : "error");
     if (ok) onSuccess();
-  }, [url, onSuccess]);
+  }, [nfcUrl, onSuccess]);
 
   useEffect(() => {
     attemptWrite();
