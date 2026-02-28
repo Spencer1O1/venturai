@@ -1,20 +1,66 @@
-// import { DataQueryPanel } from "@/components/DataQueryPanel";
+"use client";
+
+import { api } from "@venturai/backend";
+import type { Id } from "@venturai/backend/dataModel";
+//import { DataQueryPanel } from "@/components/DataQueryPanel";
 import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
-import { MOCK_ASSETS } from "@/lib/mockData";
+import { useSelectedOrg } from "@/hooks/useSelectedOrg";
+import { useQuery } from "convex/react";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const assets = [...MOCK_ASSETS].sort((a, b) => b.riskScore - a.riskScore);
+  const { orgId, orgs } = useSelectedOrg();
+  const assets = useQuery(
+    api.assets.queries.listByOrg,
+    orgId ? { orgId } : "skip",
+  );
+  const openWorkItems = useQuery(
+    api.work_items.listOpenByOrgOrGroup,
+    orgId ? { orgId } : "skip",
+  );
+
+  const openCountByAsset = new Map<Id<"assets">, number>();
+  for (const wi of openWorkItems ?? []) {
+    openCountByAsset.set(
+      wi.assetId,
+      (openCountByAsset.get(wi.assetId) ?? 0) + 1,
+    );
+  }
+
+  if (orgs === undefined) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center p-8">
+        <div className="text-foreground/60">Loading…</div>
+      </div>
+    );
+  }
+
+  if (orgs.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
+        <p className="text-center text-foreground/70">
+          Create an organization to view assets.
+        </p>
+        <Link href="/orgs" className="text-primary hover:underline">
+          Go to Organizations →
+        </Link>
+      </div>
+    );
+  }
+
+  if (orgId && assets === undefined) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center p-8">
+        <div className="text-foreground/60">Loading…</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-8 lg:flex-row">
       <div className="order-2 min-w-0 flex-1 lg:order-1">
         <header className="mb-6">
-          <h1 className="font-heading text-3xl font-bold tracking-tight text-primary">
-            VENTURAI
-          </h1>
-          <p className="mt-1 text-lg font-medium text-primary/90">Dashboard</p>
-          <h2 className="mt-4 text-xl font-semibold text-foreground">Assets</h2>
+          <h1 className="text-2xl font-semibold text-foreground">Assets</h1>
           <p className="mt-1 text-sm text-foreground/60">
             Sorted by risk. Tap an asset to view details or open work items.
           </p>
@@ -40,30 +86,30 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {assets.map((asset) => (
+              {(assets ?? []).map((asset) => (
                 <tr
-                  key={asset.id}
+                  key={asset._id}
                   className="border-b border-card-border/50 transition-colors hover:bg-card-border/20"
                 >
                   <td className="px-6 py-4">
                     <Link
-                      href={`/assets/${asset.id}`}
-                      className="font-medium text-primary transition-colors hover:text-primary-light"
+                      href={`/assets/${asset._id}`}
+                      className="font-medium text-foreground hover:text-primary"
                     >
                       {asset.name}
                     </Link>
                   </td>
                   <td className="px-6 py-4 text-foreground/70">
-                    {asset.location ?? "—"}
+                    {asset.locationText ?? "—"}
                   </td>
                   <RiskHeatmapCell riskScore={asset.riskScore} />
                   <td className="px-6 py-4 text-foreground/70">
-                    {asset.openWorkItemCount}
+                    {openCountByAsset.get(asset._id) ?? 0}
                   </td>
                   <td className="px-6 py-4">
                     <Link
-                      href={`/work-items?asset=${asset.id}`}
-                      className="text-primary transition-colors hover:text-primary-light hover:underline"
+                      href={`/work-items?asset=${asset._id}`}
+                      className="text-primary hover:underline"
                     >
                       View work items →
                     </Link>
@@ -73,6 +119,12 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </div>
+
+        {assets?.length === 0 && (
+          <p className="mt-4 text-center text-foreground/60">
+            No assets yet. Add assets from your organization.
+          </p>
+        )}
       </div>
 
       {/* <div className="order-1 shrink-0 lg:order-2">

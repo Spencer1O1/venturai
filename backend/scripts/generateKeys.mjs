@@ -17,9 +17,10 @@ const privateKey = await exportPKCS8(keys.privateKey);
 const publicKey = await exportJWK(keys.publicKey);
 const jwks = JSON.stringify({ keys: [{ use: "sig", ...publicKey }] });
 
-process.stdout.write(
-  `JWT_PRIVATE_KEY="${privateKey.trimEnd().replace(/\n/g, " ")}"`,
-);
-process.stdout.write("\n");
-process.stdout.write(`JWKS=${jwks}`);
+// Output PEM with newlines - Convex requires proper PKCS#8 format.
+// Paste the entire block into JWT_PRIVATE_KEY, preserving newlines.
+process.stdout.write("=== JWT_PRIVATE_KEY ===\n");
+process.stdout.write(privateKey.trimEnd());
+process.stdout.write("\n\n=== JWKS ===\n");
+process.stdout.write(jwks);
 process.stdout.write("\n");

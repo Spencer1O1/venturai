@@ -1,12 +1,16 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+
+import { OrgSelector } from "./OrgSelector";
 import { ThemeToggle } from "./ThemeToggle";
 
 const nav = [
   { href: "/", label: "Dashboard" },
+  { href: "/assets", label: "Assets" },
   { href: "/work-items", label: "Work Items" },
   { href: "/orgs", label: "Organizations" },
 ];
@@ -14,7 +18,13 @@ const nav = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { orgId } = useSelectedOrg();
   const { signOut } = useAuthActions();
+
+  const appendOrg = (href: string) => {
+    if (!orgId || href.startsWith("/orgs")) return href;
+    return `${href}${href.includes("?") ? "&" : "?"}org=${orgId}`;
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -32,9 +42,11 @@ export function Sidebar() {
         </Link>
         <ThemeToggle />
       </div>
+      <OrgSelector />
       <nav className="flex flex-1 flex-col gap-1">
         {nav.map(({ href, label }) => {
-          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const isActive =
+            href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link
               key={href}
