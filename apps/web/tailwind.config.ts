@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,20 +10,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0f",
-        foreground: "#ffffff",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "#8b5cf6",
-          light: "#a78bfa",
-          glow: "#7c3aed",
+          DEFAULT: "var(--primary)",
+          light: "var(--primary-light)",
+          glow: "#f97316",
         },
         accent: {
           DEFAULT: "#23c9ff",
           dark: "#1ab3e8",
         },
         card: {
-          DEFAULT: "#1a1a24",
-          border: "#2a2a3a",
+          DEFAULT: "var(--card)",
+          border: "var(--card-border)",
+        },
+        risk: {
+          low: "#22c55e",
+          medium: "#eab308",
+          high: "#f97316",
+          critical: "#ef4444",
         },
       },
       keyframes: {
@@ -41,11 +48,11 @@ const config: Config = {
         "glow-pulse": {
           "0%, 100%": {
             opacity: "1",
-            filter: "drop-shadow(0 0 8px #7c3aed)",
+            filter: "drop-shadow(0 0 8px #f97316)",
           },
           "50%": {
             opacity: "0.8",
-            filter: "drop-shadow(0 0 20px #7c3aed)",
+            filter: "drop-shadow(0 0 20px #f97316)",
           },
         },
         "glow-pulse-accent": {
