@@ -24,6 +24,7 @@ type Step =
   | "edit"
   | "creating"
   | "template"
+  | "templateEdit"
   | "write"
   | "done";
 
@@ -107,6 +108,19 @@ export default function RegisterAssetScreen() {
     serial: "",
   });
   const [createdAssetId, setCreatedAssetId] = useState<string | null>(null);
+  const [templateForm, setTemplateForm] = useState<{
+    photoDescriptions: string[];
+    additionalQuestions: Array<{
+      key: string;
+      label: string;
+      type: "text" | "number" | "boolean";
+    }>;
+  }>({
+    photoDescriptions: ["Wide shot", "Close-up of area of concern"],
+    additionalQuestions: [
+      { key: "condition", label: "Overall condition (1-5)", type: "number" },
+    ],
+  });
 
   const adminOrgs = useQuery(api.org_members.getOrgsUserIsAdminOf);
   const maintenanceGroups = useQuery(
@@ -359,28 +373,9 @@ export default function RegisterAssetScreen() {
         </Text>
         <Pressable
           style={styles.button}
-          onPress={async () => {
-            if (!selectedOrgId || !createdAssetId) return;
-            const templateId = await createTemplate({
-              orgId: selectedOrgId as Id<"orgs">,
-              name: `Template for ${form.name}`,
-              photoDescriptions: ["Wide shot", "Close-up of area of concern"],
-              additionalQuestions: [
-                {
-                  key: "condition",
-                  label: "Overall condition (1-5)",
-                  type: "number",
-                },
-              ],
-            });
-            await updateAssetTemplate({
-              assetId: createdAssetId as Id<"assets">,
-              templateId,
-            });
-            setStep("write");
-          }}
+          onPress={() => setStep("templateEdit")}
         >
-          <Text style={styles.buttonText}>Create template (recommended)</Text>
+          <Text style={styles.buttonText}>Configure template (recommended)</Text>
         </Pressable>
         <Pressable
           style={[styles.button, styles.buttonSecondary]}
@@ -389,6 +384,188 @@ export default function RegisterAssetScreen() {
           <Text style={styles.buttonText}>Skip for now</Text>
         </Pressable>
       </View>
+    );
+  }
+
+  if (step === "templateEdit") {
+    const qTypes = ["text", "number", "boolean"] as const;
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.pad}>
+        <Text style={styles.title}>Edit template</Text>
+        <Text style={styles.subtitle}>
+          What photos should inspectors take? What questions to ask?
+        </Text>
+
+        <Text style={styles.label}>Photo descriptions (one per photo)</Text>
+        {templateForm.photoDescriptions.map((desc, i) => (
+          <View key={`photo-${i}-${desc.slice(0, 10)}`} style={styles.row}>
+            <TextInput
+              style={[styles.input, styles.flex1]}
+              value={desc}
+              onChangeText={(v) =>
+                setTemplateForm((f) => ({
+                  ...f,
+                  photoDescriptions: f.photoDescriptions.map((d, j) =>
+                    j === i ? v : d,
+                  ),
+                }))
+              }
+              placeholder={`Photo ${i + 1}`}
+            />
+            <Pressable
+              style={styles.removeBtn}
+              onPress={() =>
+                setTemplateForm((f) => ({
+                  ...f,
+                  photoDescriptions: f.photoDescriptions.filter((_, j) => j !== i),
+                }))
+              }
+            >
+              <Text style={styles.removeBtnText}>−</Text>
+            </Pressable>
+          </View>
+        ))}
+        <Pressable
+          style={[styles.button, styles.buttonOutline, styles.smallBtn]}
+          onPress={() =>
+            setTemplateForm((f) => ({
+              ...f,
+              photoDescriptions: [...f.photoDescriptions, ""],
+            }))
+          }
+        >
+          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+            + Add photo
+          </Text>
+        </Pressable>
+
+        <Text style={[styles.label, styles.labelTop]}>Additional questions</Text>
+        {templateForm.additionalQuestions.map((q, i) => (
+          <View key={`q-${i}-${q.key}`} style={styles.questionRow}>
+            <TextInput
+              style={[styles.input, styles.flex1]}
+              value={q.key}
+              onChangeText={(v) =>
+                setTemplateForm((f) => ({
+                  ...f,
+                  additionalQuestions: f.additionalQuestions.map((aq, j) =>
+                    j === i ? { ...aq, key: v } : aq,
+                  ),
+                }))
+              }
+              placeholder="key (snake_case)"
+            />
+            <TextInput
+              style={[styles.input, styles.flex1]}
+              value={q.label}
+              onChangeText={(v) =>
+                setTemplateForm((f) => ({
+                  ...f,
+                  additionalQuestions: f.additionalQuestions.map((aq, j) =>
+                    j === i ? { ...aq, label: v } : aq,
+                  ),
+                }))
+              }
+              placeholder="Label"
+            />
+            <View style={styles.typeRow}>
+              {qTypes.map((t) => (
+                <Pressable
+                  key={t}
+                  style={[
+                    styles.typeChip,
+                    q.type === t && styles.typeChipSelected,
+                  ]}
+                  onPress={() =>
+                    setTemplateForm((f) => ({
+                      ...f,
+                      additionalQuestions: f.additionalQuestions.map((aq, j) =>
+                        j === i ? { ...aq, type: t } : aq,
+                      ),
+                    }))
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.typeChipText,
+                      q.type === t && styles.typeChipTextSelected,
+                    ]}
+                  >
+                    {t}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <Pressable
+              style={styles.removeBtn}
+              onPress={() =>
+                setTemplateForm((f) => ({
+                  ...f,
+                  additionalQuestions: f.additionalQuestions.filter(
+                    (_, j) => j !== i,
+                  ),
+                }))
+              }
+            >
+              <Text style={styles.removeBtnText}>−</Text>
+            </Pressable>
+          </View>
+        ))}
+        <Pressable
+          style={[styles.button, styles.buttonOutline, styles.smallBtn]}
+          onPress={() =>
+            setTemplateForm((f) => ({
+              ...f,
+              additionalQuestions: [
+                ...f.additionalQuestions,
+                { key: "", label: "", type: "text" },
+              ],
+            }))
+          }
+        >
+          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+            + Add question
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.button}
+          disabled={templateForm.photoDescriptions.every((d) => !d.trim())}
+          onPress={async () => {
+            if (!selectedOrgId || !createdAssetId) return;
+            const validPhotos = templateForm.photoDescriptions
+              .map((d) => d.trim())
+              .filter(Boolean);
+            const validQuestions = templateForm.additionalQuestions
+              .filter((q) => q.key.trim() && q.label.trim())
+              .map((q) => ({ ...q, key: q.key.trim(), label: q.label.trim() }));
+            if (validPhotos.length === 0) return;
+
+            const templateId = await createTemplate({
+              orgId: selectedOrgId as Id<"orgs">,
+              name: `Template for ${form.name}`,
+              photoDescriptions: validPhotos,
+              additionalQuestions: validQuestions,
+            });
+            await updateAssetTemplate({
+              assetId: createdAssetId as Id<"assets">,
+              templateId,
+            });
+            setStep("write");
+          }}
+        >
+          <Text style={styles.buttonText}>Create template</Text>
+        </Pressable>
+
+        <Pressable
+          style={[styles.button, styles.buttonOutline]}
+          onPress={() => setStep("template")}
+        >
+          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+            Back
+          </Text>
+        </Pressable>
+      </ScrollView>
     );
   }
 
@@ -456,6 +633,41 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
   nfcSpinner: { marginVertical: 24 },
   label: { fontSize: 14, fontWeight: "500", marginBottom: 4 },
+  labelTop: { marginTop: 24 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 8,
+  },
+  flex1: { flex: 1 },
+  removeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: "#fee2e2",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  removeBtnText: { fontSize: 18, color: "#dc2626", fontWeight: "600" },
+  questionRow: {
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+  },
+  typeRow: { flexDirection: "row", gap: 8, marginTop: 8, marginBottom: 8 },
+  typeChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  typeChipSelected: { borderColor: "#2563eb", backgroundColor: "#eff6ff" },
+  typeChipText: { fontSize: 12, color: "#64748b" },
+  typeChipTextSelected: { color: "#2563eb", fontWeight: "600" },
+  smallBtn: { marginBottom: 16 },
   input: {
     borderWidth: 1,
     borderColor: "#e2e8f0",

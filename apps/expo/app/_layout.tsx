@@ -4,6 +4,7 @@ import { ConvexReactClient } from "convex/react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { Stack } from "expo-router";
+import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -49,11 +50,23 @@ function NfcLaunchHandler() {
   useEffect(() => {
     console.log("[NFC Launch] NfcLaunchHandler mounted, Platform:", Platform.OS);
     if (Platform.OS !== "android") return;
-    console.log("[NFC Launch] calling getNfcLaunchDestination...");
-    getNfcLaunchDestination().then((dest) => {
-      console.log("[NFC Launch] destination from tag", dest);
-      if (dest) setPendingDest(dest);
-    });
+    const resolveLaunch = async () => {
+      const nfcDest = await getNfcLaunchDestination();
+      console.log("[NFC Launch] destination from NFC tag", nfcDest);
+      if (nfcDest) {
+        setPendingDest(nfcDest);
+        return;
+      }
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        const assetId = parseAssetIdFromUrl(initialUrl);
+        if (assetId) {
+          console.log("[NFC Launch] destination from VIEW intent", assetId);
+          setPendingDest(assetId);
+        }
+      }
+    };
+    resolveLaunch();
   }, []);
 
   useEffect(() => {

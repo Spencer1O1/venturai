@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.spencerls.venturai",
+      "sha256_cert_fingerprints": [
+        "8F:60:64:EA:CA:86:E8:94:7A:44:11:28:3B:1B:59:67:FB:5F:1C:5D:27:6B:52:B0:E4:A9:7F:C6:4B:B2:3D:4E"
+      ]
+    }
+  }
+]

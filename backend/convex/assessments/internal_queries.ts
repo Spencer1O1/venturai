@@ -1,9 +1,11 @@
 import { v } from "convex/values";
 
 import { internalQuery } from "../_generated/server";
+import { DEFAULT_TEMPLATE } from "../lib/default_template";
 
 /**
  * Load context for AI: asset, template, maintenance group name, open action keys.
+ * When asset has no template, returns DEFAULT_TEMPLATE so inspections always require at least 1 photo.
  */
 export const loadContext = internalQuery({
   args: {
@@ -19,19 +21,16 @@ export const loadContext = internalQuery({
       externalId: v.optional(v.string()),
       maintenanceGroupId: v.id("maintenanceGroups"),
     }),
-    template: v.union(
-      v.object({
-        photoDescriptions: v.array(v.string()),
-        additionalQuestions: v.array(
-          v.object({
-            key: v.string(),
-            label: v.string(),
-            type: v.string(),
-          }),
-        ),
-      }),
-      v.null(),
-    ),
+    template: v.object({
+      photoDescriptions: v.array(v.string()),
+      additionalQuestions: v.array(
+        v.object({
+          key: v.string(),
+          label: v.string(),
+          type: v.string(),
+        }),
+      ),
+    }),
     maintenanceGroupName: v.string(),
     existingOpenActionKeys: v.array(v.string()),
   }),
@@ -69,6 +68,9 @@ export const loadContext = internalQuery({
 
     const existingOpenActionKeys = openWorkItems.map((wi) => wi.actionKey);
 
+    const effectiveTemplate =
+      template ?? DEFAULT_TEMPLATE;
+
     return {
       asset: {
         _id: asset._id,
@@ -79,7 +81,7 @@ export const loadContext = internalQuery({
         externalId: asset.externalId,
         maintenanceGroupId: asset.maintenanceGroupId,
       },
-      template,
+      template: effectiveTemplate,
       maintenanceGroupName: group.name,
       existingOpenActionKeys,
     };
