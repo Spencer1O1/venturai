@@ -35,7 +35,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
+      "router": {"origin": "https://venturai.app"},
       "eas": {
         "projectId": "template-project-id"
       }

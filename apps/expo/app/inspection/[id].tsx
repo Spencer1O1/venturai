@@ -1,55 +1,74 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
+/**
+ * Inspect flow - routine assessment.
+ * Take photos (from template), enter information, submit.
+ * TODO: Wire to Convex - templates.getById, storage upload, assessments.createWithAI
+ */
 export default function InspectionScreen() {
-  const [items, setItems] = useState([
-    { id: "1", label: "Check oil level", checked: false },
-    { id: "2", label: "Inspect belts", checked: false },
-  ]);
-
-  const toggle = (id: string) => {
-    setItems(prev =>
-      prev.map(item =>
-        item.id === id
-          ? { ...item, checked: !item.checked }
-          : item
-      )
-    );
-  };
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [notes, setNotes] = useState("");
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 24 }}>
-      <Text style={{ fontSize: 20, marginBottom: 20 }}>
-        Daily Inspection
-      </Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Inspect</Text>
+      <Text style={styles.subtitle}>Routine inspection for asset {id}</Text>
 
-      {items.map(item => (
-        <Pressable
-          key={item.id}
-          onPress={() => toggle(item.id)}
-          style={{
-            padding: 16,
-            backgroundColor: item.checked ? "#22c55e" : "#e5e7eb",
-            borderRadius: 6,
-            marginBottom: 12,
-          }}
-        >
-          <Text>{item.label}</Text>
-        </Pressable>
-      ))}
-
-      <Pressable
-        style={{
-          backgroundColor: "#1e40af",
-          padding: 16,
-          borderRadius: 8,
-          marginTop: 20,
-        }}
-      >
-        <Text style={{ color: "#fff", textAlign: "center" }}>
-          Submit Inspection
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Photos</Text>
+        <Text style={styles.placeholder}>
+          Take photos per template (wide shot, close-ups) – camera integration
+          coming
         </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Notes (optional)</Text>
+        <TextInput
+          placeholder="Additional observations..."
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          style={styles.input}
+        />
+      </View>
+
+      <Pressable style={styles.submitButton}>
+        <Text style={styles.submitText}>Submit inspection</Text>
       </Pressable>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { padding: 24 },
+  title: { fontSize: 20, fontWeight: "600", marginBottom: 4 },
+  subtitle: { fontSize: 14, color: "#64748b", marginBottom: 24 },
+  section: { marginBottom: 20 },
+  sectionLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  placeholder: { fontSize: 14, color: "#94a3b8" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 80,
+  },
+  submitButton: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  submitText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+});

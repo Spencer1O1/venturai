@@ -1,49 +1,41 @@
-/* import { View, Text, ActivityIndicator, Alert } from "react-native";
-import { useEffect } from "react";
 import { useRouter } from "expo-router";
-import { useMutation } from "convex/react";
-import NfcManager, { NfcTech } from "react-native-nfc-manager";
-import { api } from "../convex/_generated/api";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function ScanScreen() {
   const router = useRouter();
-  const getAsset = useMutation(api.assets.getAssetByNfcTagId);
-
-  useEffect(() => {
-    const startScan = async () => {
-      try {
-        await NfcManager.start();
-        await NfcManager.requestTechnology(NfcTech.Ndef);
-
-        const tag = await NfcManager.getTag();
-        const nfcTagId = tag?.id;
-
-        if (!nfcTagId) throw new Error("Invalid NFC tag");
-
-        const asset = await getAsset({ nfcTagId });
-
-        if (!asset) {
-          Alert.alert("Asset not found");
-          router.replace("/");
-          return;
-        }
-
-        router.replace(`/asset/${asset._id}`);
-      } catch (err) {
-        Alert.alert("Scan failed");
-        router.replace("/");
-      } finally {
-        NfcManager.cancelTechnologyRequest();
-      }
-    };
-
-    startScan();
-  }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator size="large" />
-      <Text>Hold device near NFC tag...</Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>NFC scan placeholder</Text>
+      <Text style={styles.hint}>
+        Add react-native-nfc-manager and Convex to enable scanning
+      </Text>
+      <Pressable style={styles.button} onPress={() => router.back()}>
+        <Text style={styles.buttonText}>Back</Text>
+      </Pressable>
     </View>
   );
-} */
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  text: { fontSize: 18, marginBottom: 8 },
+  hint: {
+    fontSize: 14,
+    color: "#64748b",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  button: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  buttonText: { color: "#fff", fontSize: 16 },
+});
