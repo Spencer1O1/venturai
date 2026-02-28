@@ -50,3 +50,15 @@ __pycache__/
 
 # VSCode
 *.code-workspace
+
+#databricks
+*.share
+
+# Databricks Delta Sharing credentials (DO NOT COMMIT)
+*.share
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+dsenv/
