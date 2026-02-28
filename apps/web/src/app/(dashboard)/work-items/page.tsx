@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RiskBadge } from "@/components/RiskBadge";
+import { RiskHeatmapPill } from "@/components/RiskHeatmapCell";
 import { MOCK_WORK_ITEMS } from "@/lib/mockData";
 
 export default function WorkItemsPage() {
@@ -39,7 +39,7 @@ export default function WorkItemsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <RiskBadge riskScore={item.riskValue} />
+                <RiskHeatmapPill riskScore={item.riskValue} />
                 <span className="rounded-md border border-card-border bg-background px-3 py-1 text-xs text-foreground/70">
                   Open
                 </span>
