@@ -1,8 +1,8 @@
 "use client";
 
 import { useConvexAuth } from "convex/react";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { type ReactNode, useEffect } from "react";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { isLoading, isAuthenticated } = useConvexAuth();

@@ -2,7 +2,9 @@
  * Risk score 0–100 → display tier and color for dashboard.
  * riskScore is bounded 0–100; riskLoad is unbounded sum of work item values.
  */
-export function getRiskTier(riskScore: number): "low" | "medium" | "high" | "critical" {
+export function getRiskTier(
+  riskScore: number,
+): "low" | "medium" | "high" | "critical" {
   if (riskScore <= 25) return "low";
   if (riskScore <= 50) return "medium";
   if (riskScore <= 75) return "high";

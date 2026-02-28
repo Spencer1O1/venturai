@@ -8,7 +8,9 @@ function getTheme(): "light" | "dark" {
   if (typeof document === "undefined") return "light";
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === "dark" || stored === "light") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 function setTheme(theme: "light" | "dark") {
@@ -23,19 +25,20 @@ export function ThemeToggle() {
     setThemeState(getTheme());
   }, []);
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const next = e.target.checked ? "dark" : "light";
-      setTheme(next);
-      setThemeState(next);
-    },
-    [],
-  );
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.checked ? "dark" : "light";
+    setTheme(next);
+    setThemeState(next);
+  }, []);
 
   const isDark = theme === "dark";
 
   return (
-    <label className="theme-toggle" title="Toggle theme" htmlFor="venturai-theme-toggle">
+    <label
+      className="theme-toggle"
+      title="Toggle theme"
+      htmlFor="venturai-theme-toggle"
+    >
       <input
         id="venturai-theme-toggle"
         type="checkbox"

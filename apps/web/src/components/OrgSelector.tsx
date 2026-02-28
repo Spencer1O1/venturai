@@ -1,7 +1,7 @@
 "use client";
 
-import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import type { Id } from "@venturai/backend/dataModel";
+import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 
 export function OrgSelector() {
   const { orgId, orgs, setOrgId } = useSelectedOrg();

@@ -6,7 +6,10 @@ type RiskHeatmapPillProps = {
 };
 
 /** Colored heatmap pill for risk 0–100. Use in tables (RiskHeatmapCell) or inline. */
-export function RiskHeatmapPill({ riskScore, className = "" }: RiskHeatmapPillProps) {
+export function RiskHeatmapPill({
+  riskScore,
+  className = "",
+}: RiskHeatmapPillProps) {
   const tier = getRiskTier(riskScore);
   const styles = RISK_HEATMAP_STYLES[tier];
 
@@ -26,7 +29,10 @@ type RiskHeatmapCellProps = {
   className?: string;
 };
 
-export function RiskHeatmapCell({ riskScore, className = "" }: RiskHeatmapCellProps) {
+export function RiskHeatmapCell({
+  riskScore,
+  className = "",
+}: RiskHeatmapCellProps) {
   return (
     <td className={`px-6 py-3 ${className}`}>
       <RiskHeatmapPill riskScore={riskScore} />

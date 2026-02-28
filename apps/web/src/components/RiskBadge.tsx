@@ -1,4 +1,4 @@
-import { getRiskTier, getRiskLabel, RISK_TIER_CLASSES } from "@/lib/risk";
+import { getRiskLabel, getRiskTier, RISK_TIER_CLASSES } from "@/lib/risk";
 
 type RiskBadgeProps = {
   riskScore: number;
@@ -6,7 +6,11 @@ type RiskBadgeProps = {
   className?: string;
 };
 
-export function RiskBadge({ riskScore, showValue = true, className = "" }: RiskBadgeProps) {
+export function RiskBadge({
+  riskScore,
+  showValue = true,
+  className = "",
+}: RiskBadgeProps) {
   const tier = getRiskTier(riskScore);
   const label = getRiskLabel(riskScore);
   const classes = RISK_TIER_CLASSES[tier];

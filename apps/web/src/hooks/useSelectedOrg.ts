@@ -19,12 +19,13 @@ export function useSelectedOrg() {
   const orgFromPath = pathname.startsWith("/orgs/")
     ? (pathname.replace("/orgs/", "").split("/")[0] as Id<"orgs"> | undefined)
     : undefined;
-  const orgId: Id<"orgs"> | undefined =
-    (orgParam && orgs?.some((o) => o._id === orgParam)
+  const orgId: Id<"orgs"> | undefined = (
+    orgParam && orgs?.some((o) => o._id === orgParam)
       ? orgParam
       : orgFromPath && orgs?.some((o) => o._id === orgFromPath)
         ? orgFromPath
-        : orgs?.[0]?._id) as Id<"orgs"> | undefined;
+        : orgs?.[0]?._id
+  ) as Id<"orgs"> | undefined;
 
   const setOrgId = (id: Id<"orgs">) => {
     const params = new URLSearchParams(searchParams.toString());
