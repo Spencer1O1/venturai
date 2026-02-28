@@ -26,3 +26,23 @@ export const RISK_TIER_CLASSES = {
   high: "bg-risk-high/20 text-risk-high border-risk-high/40",
   critical: "bg-risk-critical/20 text-risk-critical border-risk-critical/40",
 } as const;
+
+/** Heatmap colors (inline styles): green → yellow → orange → red */
+export const RISK_HEATMAP_STYLES = {
+  low: {
+    backgroundColor: "#22c55e",
+    color: "#052e16",
+  },
+  medium: {
+    backgroundColor: "#eab308",
+    color: "#422006",
+  },
+  high: {
+    backgroundColor: "#f97316",
+    color: "#ffffff",
+  },
+  critical: {
+    backgroundColor: "#ef4444",
+    color: "#ffffff",
+  },
+} as const;
