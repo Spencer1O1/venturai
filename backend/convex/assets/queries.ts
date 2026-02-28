@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 
 import { query } from "../_generated/server";
+import { DEFAULT_TEMPLATE } from "../lib/default_template";
 import { assetDocValidator } from "./helpers";
 
 /**
@@ -28,6 +29,43 @@ export const listByOrg = query({
       .collect();
 
     return assets.sort((a, b) => b.riskScore - a.riskScore);
+  },
+});
+
+const templateForInspectionValidator = v.object({
+  photoDescriptions: v.array(v.string()),
+  additionalQuestions: v.array(
+    v.object({
+      key: v.string(),
+      label: v.string(),
+      type: v.string(),
+    }),
+  ),
+});
+
+/**
+ * Get effective template for an asset (for inspection UI).
+ * Uses asset's template when present; otherwise returns DEFAULT_TEMPLATE
+ * (1 photo + no extra questions). Notes is always a built-in field.
+ */
+export const getTemplateForAsset = query({
+  args: { assetId: v.id("assets") },
+  returns: templateForInspectionValidator,
+  handler: async (ctx, args) => {
+    const asset = await ctx.db.get(args.assetId);
+    if (!asset) throw new Error("Asset not found");
+    if (!asset.templateId) return DEFAULT_TEMPLATE;
+    const t = await ctx.db.get(asset.templateId);
+    if (!t)
+      return DEFAULT_TEMPLATE;
+    return {
+      photoDescriptions: t.photoDescriptions,
+      additionalQuestions: t.additionalQuestions.map((q) => ({
+        key: q.key,
+        label: q.label,
+        type: q.type,
+      })),
+    };
   },
 });
 

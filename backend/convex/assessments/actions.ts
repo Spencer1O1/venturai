@@ -81,14 +81,8 @@ export const createWithAI = action({
       throw new Error("No valid image URLs; ensure photos are uploaded");
     }
 
-    const template = context.template ?? {
-      photoDescriptions: [] as string[],
-      additionalQuestions: [] as Array<{
-        key: string;
-        label: string;
-        type: string;
-      }>,
-    };
+    // loadContext returns DEFAULT_TEMPLATE when asset has no template (ensures at least 1 photo)
+    const template = context.template;
 
     const payload = {
       imageUrls,

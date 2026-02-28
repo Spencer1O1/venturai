@@ -32,6 +32,7 @@ import type * as auth from "../auth.js";
 import type * as auth_helpers from "../auth_helpers.js";
 import type * as http from "../http.js";
 import type * as lib_ai_analysis_validator from "../lib/ai_analysis_validator.js";
+import type * as lib_default_template from "../lib/default_template.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as maintenance_groups from "../maintenance_groups.js";
 import type * as maintenance_records from "../maintenance_records.js";
@@ -76,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   auth_helpers: typeof auth_helpers;
   http: typeof http;
   "lib/ai_analysis_validator": typeof lib_ai_analysis_validator;
+  "lib/default_template": typeof lib_default_template;
   "lib/utils": typeof lib_utils;
   maintenance_groups: typeof maintenance_groups;
   maintenance_records: typeof maintenance_records;
