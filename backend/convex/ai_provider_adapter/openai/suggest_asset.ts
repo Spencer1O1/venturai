@@ -3,31 +3,44 @@
 import type { AssetSuggester, SuggestAssetPayload } from "../types";
 import { AssetSuggestionSchema } from "./schemas/asset_suggestion";
 
+function buildSystemPrompt(groupsList: string): string {
+  return [
+    "You are an industrial asset registration assistant.",
+    "TASK: Analyze the attached photo of an asset and suggest registration details. Return exactly ONE JSON object conforming to the schema.",
+    "",
+    "HARD RULES:",
+    "- Do not invent specifics that are not visible in the photo.",
+    "- name: Human-readable asset name.",
+    "- maintenance_group_id: MUST be exactly one of the IDs from the MAINTENANCE_GROUPS list below. Use the ID string, not the name.",
+    "- manufacturer, model, serial: Include ONLY if visible/readable in the photo. Omit the field entirely if not visible.",
+    "",
+    "MAINTENANCE_GROUPS (maintenance_group_id must equal one of the IDs):",
+    groupsList,
+  ].join("\n");
+}
+
+function buildUserMessage(): string {
+  return "Analyze this asset photo and return the structured suggestion.";
+}
+
 export const suggestAsset: AssetSuggester = async (
   payload: SuggestAssetPayload,
 ) => {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
 
-  const model = process.env.OPENAI_MODEL ?? "gpt-4o";
+  const model = process.env.OPENAI_MODEL;
+  if (!model) {
+    throw new Error("OPENAI_MODEL is not set");
+  }
 
   const groupIds = payload.maintenanceGroups.map((g) => g._id);
   const groupsList = payload.maintenanceGroups
-    .map((g) => `- ${g.name} [${g._id}]`)
+    .map((g) => `- ${g.name} (${g._id})`)
     .join("\n");
   const schema = AssetSuggestionSchema(groupIds);
-
-  const systemPrompt = [
-    "You are an industrial asset registration assistant. Analyze the photo of an asset and suggest registration details.",
-    "",
-    "Rules:",
-    "- name: Human-readable asset name (e.g. Diaphragm Pump #1)",
-    "- maintenance_group_id: MUST be exactly one of the IDs from the maintenance groups list",
-    "- manufacturer, model, serial: Include only if visible/readable in the photo; omit otherwise",
-    "",
-    "Maintenance groups:",
-    groupsList,
-  ].join("\n");
 
   const resp = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -40,14 +53,16 @@ export const suggestAsset: AssetSuggester = async (
       input: [
         {
           role: "system",
-          content: [{ type: "input_text", text: systemPrompt }],
+          content: [
+            { type: "input_text", text: buildSystemPrompt(groupsList) },
+          ],
         },
         {
           role: "user",
           content: [
             {
               type: "input_text",
-              text: "Analyze this asset photo and return the structured suggestion.",
+              text: buildUserMessage(),
             },
             {
               type: "input_image",
@@ -77,13 +92,15 @@ export const suggestAsset: AssetSuggester = async (
   };
   const content = (data.output ?? []).flatMap((o) => o.content ?? []);
   const text = content.find((c) => c.type === "output_text")?.text;
-  if (!text) throw new Error("OpenAI response missing output_text");
+  if (!text) {
+    throw new Error("OpenAI response missing output_text");
+  }
 
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
-    throw new Error(`Invalid JSON: ${text.slice(0, 200)}`);
+    throw new Error(`OpenAI returned invalid JSON: ${text.slice(0, 200)}`);
   }
 
   return {
