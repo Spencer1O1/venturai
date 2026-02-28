@@ -1,7 +1,7 @@
 "use node";
 
 import type { AssetSuggester, SuggestAssetPayload } from "../types";
-import { AssetSuggestionSchema } from "./schemas/suggest_asset";
+import { AssetSuggestionSchema } from "./schemas/asset_suggestion";
 
 export const suggestAsset: AssetSuggester = async (
   payload: SuggestAssetPayload,

@@ -1,5 +1,3 @@
-import type { AIOutput } from "./ai_output_schema";
-
 export type AIMetadata = {
   provider: "openai" | "gemini" | "claude";
   model?: string;
@@ -52,4 +50,5 @@ export type AssetSuggester = (
   payload: SuggestAssetPayload,
 ) => Promise<AssetSuggesterResponse>;
 
-export type { AIOutput };
+export type { AIAnalysis } from "./validation/analysis";
+export type { AssetSuggestion } from "./validation/asset_suggestion";

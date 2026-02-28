@@ -1,7 +1,7 @@
 "use node";
 
 import type { AIAnalyzer, AnalyzePayload } from "../types";
-import { AIAnalysisSchema } from "./schemas/analyze";
+import { AIAnalysisSchema } from "./schemas/analysis";
 
 function buildSystemPrompt(): string {
   return `
