@@ -2,14 +2,14 @@
 
 import { DataQueryPanel } from "@/components/DataQueryPanel";
 import { RiskHeatmapCell } from "@/components/RiskHeatmapCell";
+import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { api } from "@venturai/backend";
 import type { Id } from "@venturai/backend/dataModel";
 import { useQuery } from "convex/react";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const orgs = useQuery(api.org_members.getOrgsUserBelongsTo);
-  const orgId = orgs?.[0]?._id;
+  const { orgId, orgs } = useSelectedOrg();
   const assets = useQuery(
     api.assets.queries.listByOrg,
     orgId ? { orgId } : "skip",
