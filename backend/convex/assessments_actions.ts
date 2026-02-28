@@ -15,6 +15,7 @@ import { internal } from "./_generated/api";
 import { action } from "./_generated/server";
 import { ANALYZERS } from "./ai_provider_adapter";
 import { analyze } from "./ai_provider_adapter/analyze";
+
 export const createWithAI = action({
   args: {
     assetId: v.id("assets"),
@@ -38,7 +39,7 @@ export const createWithAI = action({
   }),
   handler: async (ctx, args) => {
     const assessmentId = await ctx.runMutation(
-      (internal as any).assessments.internal.createPlaceholder,
+      (internal as any).assessments_internal.createPlaceholder,
       {
         assetId: args.assetId,
         intent: args.intent,
@@ -55,7 +56,7 @@ export const createWithAI = action({
       ctx.runQuery((internal as any).storage.getImageUrls, {
         storageIds: args.photoStorageIds,
       }),
-      ctx.runQuery((internal as any).assessments.internal.loadContext, {
+      ctx.runQuery((internal as any).assessments_internal.loadContext, {
         assetId: args.assetId,
       }),
     ]);
@@ -97,7 +98,7 @@ export const createWithAI = action({
     const { result: aiOutput } = await analyze(ANALYZERS.OpenAI, payload);
 
     await ctx.runMutation(
-      (internal as any).assessments.internal.finalizeWithAI,
+      (internal as any).assessments_internal.finalizeWithAI,
       {
         assessmentId,
         assetId: args.assetId,
@@ -106,7 +107,7 @@ export const createWithAI = action({
     );
 
     const asset = await ctx.runQuery(
-      (internal as any).assessments.internal.getAssetRisk,
+      (internal as any).assessments_internal.getAssetRisk,
       {
         assetId: args.assetId,
       },
