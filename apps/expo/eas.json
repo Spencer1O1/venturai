@@ -22,6 +22,11 @@
       "env": {
         "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": ""
       }
+    },
+    "apk": {
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {

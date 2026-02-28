@@ -124,6 +124,7 @@ export default function RegisterAssetScreen() {
   });
 
   const adminOrgs = useQuery(api.org_members.getOrgsUserIsAdminOf);
+  const orgIdToUse = selectedOrgId ?? adminOrgs?.[0]?._id ?? null;
   const maintenanceGroups = useQuery(
     api.maintenance_groups.listByOrg,
     selectedOrgId ? { orgId: selectedOrgId as Id<"orgs"> } : "skip",
@@ -135,8 +136,7 @@ export default function RegisterAssetScreen() {
   const updateAssetTemplate = useMutation(api.assets.mutations.updateTemplate);
 
   const openCameraAndContinue = useCallback(async () => {
-    const orgId = adminOrgs?.[0]?._id;
-    if (!orgId) return;
+    if (!orgIdToUse) return;
 
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -158,14 +158,14 @@ export default function RegisterAssetScreen() {
     }
 
     const uri = result.assets[0].uri;
-    setSelectedOrgId(orgId);
+    setSelectedOrgId(orgIdToUse);
     setStep("suggesting");
 
     try {
       const uploadUrl = await generateUploadUrl();
       const storageId = await uploadPhotoFromUri(uri, uploadUrl);
       const suggestResult = await suggestFromPhoto({
-        orgId,
+        orgId: orgIdToUse as Id<"orgs">,
         photoStorageId: storageId,
       });
       setForm({
@@ -192,7 +192,7 @@ export default function RegisterAssetScreen() {
               : "Could not analyze photo. Please try again.",
       );
     }
-  }, [adminOrgs, generateUploadUrl, suggestFromPhoto]);
+  }, [orgIdToUse, generateUploadUrl, suggestFromPhoto]);
 
   // Initialize NFC on mount
   useEffect(() => {
@@ -239,6 +239,26 @@ export default function RegisterAssetScreen() {
           Take a photo of the asset. AI will suggest details, then you can edit
           and create the asset. You'll write the tag at the end.
         </Text>
+
+        {adminOrgs && adminOrgs.length > 1 && (
+          <>
+            <Text style={styles.label}>Organization</Text>
+            <View style={styles.groupList}>
+              {adminOrgs.map((org) => (
+                <Pressable
+                  key={org._id}
+                  style={[
+                    styles.groupOption,
+                    orgIdToUse === org._id && styles.groupOptionSelected,
+                  ]}
+                  onPress={() => setSelectedOrgId(org._id)}
+                >
+                  <Text style={styles.groupName}>{org.name}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </>
+        )}
 
         <Pressable style={styles.button} onPress={openCameraAndContinue}>
           <Text style={styles.buttonText}>Take photo</Text>

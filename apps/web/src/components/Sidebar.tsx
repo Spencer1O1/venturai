@@ -4,9 +4,11 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@venturai/backend";
 import { useSelectedOrg } from "@/hooks/useSelectedOrg";
 import { useQuery } from "convex/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import venturaiBanner from "@/assets/banner.png";
 import { ThemeToggle } from "./ThemeToggle";
 
 function DashboardIcon() {
@@ -160,12 +162,15 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="flex w-56 flex-col border-r border-card-border bg-card p-4">
-      <div className="mb-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="font-heading text-xl font-bold tracking-tight text-primary shadow-[0_0_12px_var(--primary)] ring-primary/30 ring-1 ring-inset">
-            VENTURAI
-          </span>
+    <aside className="flex w-56 flex-col border-r border-card-border bg-[#090712] p-4">
+      <div className="mb-6 flex items-center justify-between gap-2">
+        <Link href="/" className="flex min-w-0 shrink flex-1">
+          <Image
+            src={venturaiBanner}
+            alt="Venturai"
+            className="h-28 w-full object-contain object-left"
+            priority
+          />
         </Link>
         <ThemeToggle />
       </div>

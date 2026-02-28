@@ -1,10 +1,7 @@
 "use client";
 
 import type { Id } from "@venturai/backend/dataModel";
-import venturaiLogo from "@/assets/icon.png";
 import { useSelectedOrg } from "@/hooks/useSelectedOrg";
-import Image from "next/image";
-import Link from "next/link";
 
 import { Sidebar } from "./Sidebar";
 
@@ -72,20 +69,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-background text-foreground">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center gap-4 border-b border-card-border bg-card/80 px-6 py-3">
-          <Link href="/" className="flex shrink-0 items-center gap-3">
-            <Image
-              src={venturaiLogo}
-              alt="Venturai"
-              width={36}
-              height={36}
-              className="h-9 w-9 shrink-0 rounded-lg object-contain"
-              priority
-            />
-            <span className="text-lg font-semibold tracking-tight text-foreground">
-              VENTURAI
-            </span>
-          </Link>
+        <header className="flex shrink-0 items-center gap-4 border-b border-card-border bg-background px-6 py-3">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <div className="flex flex-1 items-center gap-2 rounded-lg border border-card-border bg-background px-3 py-2 text-foreground/60 focus-within:border-primary focus-within:text-foreground">
               <SearchIcon />
