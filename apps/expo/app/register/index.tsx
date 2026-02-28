@@ -161,9 +161,21 @@ export default function RegisterAssetScreen() {
         serial: suggestResult.serial ?? "",
       });
       setStep("edit");
-    } catch {
+    } catch (err) {
       setStep("photo");
-      Alert.alert("Error", "Could not analyze photo. Please try again.");
+      const msg =
+        err instanceof Error ? err.message : "Could not analyze photo.";
+      console.error("[Register] suggestFromPhoto failed:", err);
+      Alert.alert(
+        "Error",
+        msg.includes("OPENAI_API_KEY")
+          ? "AI is not configured. Set OPENAI_API_KEY in Convex dashboard."
+          : msg.includes("maintenance group")
+            ? "Create a maintenance group in your org first."
+            : msg.includes("Could not resolve image")
+              ? "Image upload may have failed. Try again."
+              : "Could not analyze photo. Please try again.",
+      );
     }
   }, [adminOrgs, generateUploadUrl, suggestFromPhoto]);
 

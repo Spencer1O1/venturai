@@ -4,31 +4,23 @@ import * as FileSystem from "expo-file-system/legacy";
 /**
  * Upload a photo from a local file URI to Convex storage.
  * Returns the storage ID for use with suggestFromPhoto etc.
+ * Uses FileSystem.uploadAsync (React Native Blob/ArrayBuffer not supported for fetch body).
  */
 export async function uploadPhotoFromUri(
   uri: string,
   uploadUrl: string,
 ): Promise<Id<"_storage">> {
-  const base64 = await FileSystem.readAsStringAsync(uri, {
-    encoding: "base64",
-  });
-  const byteChars = atob(base64);
-  const byteNumbers = new Array(byteChars.length);
-  for (let i = 0; i < byteChars.length; i++) {
-    byteNumbers[i] = byteChars.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: "image/jpeg" });
-
-  const resp = await fetch(uploadUrl, {
-    method: "POST",
+  const response = await FileSystem.uploadAsync(uploadUrl, uri, {
+    httpMethod: "POST",
     headers: { "Content-Type": "image/jpeg" },
-    body: blob,
+    uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
   });
-  if (!resp.ok) {
-    throw new Error(`Upload failed: ${resp.status}`);
+
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(`Upload failed: ${response.status}`);
   }
-  const json = (await resp.json()) as { storageId?: string };
+
+  const json = JSON.parse(response.body) as { storageId?: string };
   if (!json.storageId) {
     throw new Error("No storageId in upload response");
   }

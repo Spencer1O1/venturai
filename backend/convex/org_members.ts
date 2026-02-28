@@ -139,7 +139,7 @@ export const listByOrg = query({
 });
 
 /**
- * Check if the current user is an admin of the given org.
+ * Check if the current user is an admin or owner of the given org.
  */
 export const isUserAdminOfOrg = query({
   args: { orgId: v.id("orgs") },
@@ -154,7 +154,7 @@ export const isUserAdminOfOrg = query({
       )
       .unique();
 
-    return membership?.role === "admin";
+    return membership ? isAdminOrOwner(membership.role) : false;
   },
 });
 

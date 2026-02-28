@@ -207,9 +207,7 @@ export async function getNfcLaunchDestination(): Promise<
   const log = (msg: string, data?: unknown) =>
     console.log("[NFC Launch]", msg, data ?? "");
   try {
-    const getLaunchTagEvent =
-      (NfcManager as { getLaunchTagEvent?: () => Promise<TagEvent | null> })
-        .getLaunchTagEvent;
+    const getLaunchTagEvent = NfcManager.getLaunchTagEvent;
     if (!getLaunchTagEvent) {
       log("getLaunchTagEvent not available");
       return null;

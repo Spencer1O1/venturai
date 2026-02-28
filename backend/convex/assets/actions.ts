@@ -2,13 +2,10 @@
 
 import { v } from "convex/values";
 
-import type { Id } from "../_generated/dataModel";
 import { api, internal } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
 import { action } from "../_generated/server";
-import {
-  suggestAsset,
-  ASSET_SUGGESTERS,
-} from "../ai_provider_adapter";
+import { ASSET_SUGGESTERS, suggestAsset } from "../ai_provider_adapter";
 
 const internalAny = internal as Record<string, Record<string, unknown>>;
 
@@ -38,7 +35,7 @@ export const suggestFromPhoto = action({
   }),
   handler: async (ctx, args) => {
     const apiAny = api as Record<string, Record<string, unknown>>;
-    const [canAdmin, imageUrls, groups] = await Promise.all([
+    const [canAdmin, imageUrls, groups] = (await Promise.all([
       ctx.runQuery(
         (apiAny as { org_members: { isUserAdminOfOrg: unknown } }).org_members
           .isUserAdminOfOrg as Parameters<typeof ctx.runQuery>[0],
@@ -52,11 +49,17 @@ export const suggestFromPhoto = action({
           .maintenance_groups.listByOrg as Parameters<typeof ctx.runQuery>[0],
         { orgId: args.orgId },
       ),
-    ]) as [boolean, string[], Array<{ _id: Id<"maintenanceGroups">; name: string }>];
+    ])) as [
+      boolean,
+      string[],
+      Array<{ _id: Id<"maintenanceGroups">; name: string }>,
+    ];
 
-    if (!canAdmin) throw new Error("Must be admin of this org to register assets");
+    if (!canAdmin)
+      throw new Error("Must be admin of this org to register assets");
     if (!imageUrls?.length) throw new Error("Could not resolve image URL");
-    if (!groups?.length) throw new Error("Org has no maintenance groups; create one first");
+    if (!groups?.length)
+      throw new Error("Org has no maintenance groups; create one first");
 
     const imageUrl = imageUrls[0];
     if (!imageUrl) throw new Error("No image URL");
@@ -69,7 +72,8 @@ export const suggestFromPhoto = action({
       groups.find((g) => g._id === suggestion.maintenance_group_id) ??
       groups.find(
         (g) =>
-          g.name.toLowerCase() === suggestion.maintenance_group_id.toLowerCase(),
+          g.name.toLowerCase() ===
+          suggestion.maintenance_group_id.toLowerCase(),
       );
     if (!validGroup) {
       throw new Error(
