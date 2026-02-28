@@ -60,6 +60,13 @@ export default function DashboardPage() {
   }
 
   const totalAssets = assets?.length ?? 0;
+  const issuesFound = openWorkItems?.length ?? 0;
+  const highRiskCount = assets?.filter((a) => a.riskScore > 75).length ?? 0;
+  const avgRiskScoreNum = totalAssets > 0
+    ? (assets ?? []).reduce((s, a) => s + a.riskScore, 0) / totalAssets
+    : 0;
+  const avgRiskScore = avgRiskScoreNum.toFixed(1);
+
   const riskDistribution = (assets ?? []).reduce(
     (acc, a) => {
       const tier = getRiskTier(a.riskScore);
@@ -115,7 +122,63 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-8 lg:flex-row">
+    <div className="flex flex-1 flex-col gap-6 p-6">
+      {/* KPI cards row */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
+        <div className="rounded-xl border border-card-border bg-card p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Total Assets</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">{totalAssets}</p>
+        </div>
+        <div className="rounded-xl border border-card-border bg-card p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Issues Found</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">{issuesFound}</p>
+          <p className="mt-0.5 text-sm text-foreground/60">
+            {totalAssets > 0 ? Math.round((issuesFound / totalAssets) * 100) : 0}% rate
+          </p>
+        </div>
+        <div className="rounded-xl border border-card-border bg-card p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">High Risk</p>
+          <p className="mt-1 text-2xl font-bold text-risk-critical">{highRiskCount}</p>
+          <p className="mt-0.5 text-sm text-risk-critical">Requires Action</p>
+        </div>
+        <div className="rounded-xl border border-card-border bg-card p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Open Actions</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">{issuesFound}</p>
+          <p className="mt-0.5 text-sm text-risk-high">Pending</p>
+        </div>
+        <div className="rounded-xl border border-card-border bg-card p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Completed</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">—</p>
+          <p className="mt-0.5 text-sm text-foreground/60">Last 24h</p>
+        </div>
+        <div className="rounded-xl border border-card-border bg-card p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">Avg Risk Score</p>
+          <p className="mt-1 text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+            {avgRiskScore}
+          </p>
+          <div className="relative mt-3 h-8 w-full">
+            <span
+              className="absolute bottom-2 left-0 text-sm leading-none"
+              style={{
+                color: "var(--foreground)",
+                transform: "translateX(-50%)",
+                left: `${Math.min(Math.max(avgRiskScoreNum, 0), 100)}%`,
+              }}
+              aria-hidden
+            >
+              ▼
+            </span>
+            <div
+              className="absolute bottom-0 left-0 right-0 h-2 overflow-hidden rounded-full"
+              style={{
+                background: "linear-gradient(90deg, #00D68F, #FBBF24, #f97316, #F87171)",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-6 p-2 lg:flex-row">
       <div className="order-2 min-w-0 flex-1 lg:order-1">
         <header className="mb-6">
           <h1 className="text-2xl font-semibold text-foreground">Assets</h1>
@@ -300,6 +363,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      </div>
     </div>
   );
 }
