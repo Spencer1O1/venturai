@@ -25,9 +25,10 @@ export default function AssetDetailPage() {
     assetId ? { assetId } : "skip",
   );
 
+  const latestAssessment = assessments?.[0];
   const latestPhotoStorageId =
-    assessments && assessments.length > 0 && assessments[0].photoStorageIds.length > 0
-      ? assessments[0].photoStorageIds[0]
+    latestAssessment?.photoStorageIds?.length
+      ? latestAssessment.photoStorageIds[0]
       : null;
 
   const photoUrl = useQuery(
