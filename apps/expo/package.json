@@ -19,10 +19,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@convex-dev/auth": "^0.0.91",
     "@venturai/backend": "workspace:*",
+    "convex": "^1.29.1",
     "expo": "~54.0.33",
     "expo-linking": "~8.0.11",
     "expo-router": "~6.0.23",
+    "expo-secure-store": "^55.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
@@ -32,8 +35,8 @@
     "react-native-screens": "~4.16.0"
   },
   "devDependencies": {
-    "@venturai/typescript": "workspace:*",
     "@types/react": "^19.1.17",
+    "@venturai/typescript": "workspace:*",
     "typescript": "~5.9.3"
   },
   "main": "expo-router/entry"

@@ -1,3 +1,4 @@
+import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
@@ -9,6 +10,32 @@ const additionalQuestionValidator = v.object({
 });
 
 export default defineSchema({
+  ...authTables,
+  users: defineTable({
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    role: v.optional(v.union(v.literal("admin"), v.literal("maintainer"))),
+  })
+    .index("email", ["email"])
+    .index("phone", ["phone"]),
+
+  /** Maintainers are assigned to specific maintenance groups */
+  maintenanceGroupMembers: defineTable({
+    userId: v.id("users"),
+    maintenanceGroupId: v.id("maintenanceGroups"),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_maintenanceGroupId", ["maintenanceGroupId"])
+    .index("by_userId_and_maintenanceGroupId", [
+      "userId",
+      "maintenanceGroupId",
+    ]),
+
   orgs: defineTable({
     name: v.string(),
     createdAt: v.number(),

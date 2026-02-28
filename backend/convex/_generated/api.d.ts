@@ -19,6 +19,9 @@ import type * as assessments from "../assessments.js";
 import type * as assessments_actions from "../assessments_actions.js";
 import type * as assessments_internal from "../assessments_internal.js";
 import type * as assets from "../assets.js";
+import type * as auth from "../auth.js";
+import type * as auth_helpers from "../auth_helpers.js";
+import type * as http from "../http.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as maintenance_groups from "../maintenance_groups.js";
 import type * as maintenance_records from "../maintenance_records.js";
@@ -27,6 +30,7 @@ import type * as seed from "../seed.js";
 import type * as storage from "../storage.js";
 import type * as templates from "../templates.js";
 import type * as types from "../types.js";
+import type * as users from "../users.js";
 import type * as work_items from "../work_items.js";
 
 import type {
@@ -47,6 +51,9 @@ declare const fullApi: ApiFromModules<{
   assessments_actions: typeof assessments_actions;
   assessments_internal: typeof assessments_internal;
   assets: typeof assets;
+  auth: typeof auth;
+  auth_helpers: typeof auth_helpers;
+  http: typeof http;
   "lib/utils": typeof lib_utils;
   maintenance_groups: typeof maintenance_groups;
   maintenance_records: typeof maintenance_records;
@@ -55,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   storage: typeof storage;
   templates: typeof templates;
   types: typeof types;
+  users: typeof users;
   work_items: typeof work_items;
 }>;
 
