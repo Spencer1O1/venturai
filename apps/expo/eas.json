@@ -6,27 +6,16 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": ""
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
-      "env": {
-        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": ""
-      }
-    },
-    "production": {
-      "autoIncrement": true,
-      "env": {
-        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": ""
-      }
-    },
-    "apk": {
       "android": {
         "buildType": "apk"
       }
+    },
+    "production": {
+      "autoIncrement": true
     }
   },
   "submit": {

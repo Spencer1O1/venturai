@@ -12,6 +12,7 @@ const faviconPath = path.join(assetsDir, "favicon.png");
 // Plugin: copy icon to splashscreen_logo (required when splash image disabled)
 const withSplashLogoDrawable = require("./plugins/withSplashLogoDrawable.cjs");
 const withNfcIntentFilter = require("./plugins/withNfcIntentFilter.cjs");
+const withAgpUnify = require("./plugins/withAgpUnify.cjs");
 
 /** @type {import('expo/config').ExpoConfig} */
 const config = {
@@ -53,12 +54,17 @@ const config = {
     ],
     [withSplashLogoDrawable, { iconPath: splashIconPath }],
     withNfcIntentFilter,
+    withAgpUnify,
   ],
   web: { favicon: faviconPath },
-  experiments: { typedRoutes: true, reactCompiler: true },
+  experiments: {
+    typedRoutes: true,
+    reactCompiler: true,
+    autolinkingModuleResolution: true,
+  },
   extra: {
     router: { origin: "https://venturai.app" },
-    eas: { projectId: "template-project-id" },
+    eas: { projectId: "d1021b5d-7f26-48f5-823d-3b0b068313b7" },
   },
 };
 

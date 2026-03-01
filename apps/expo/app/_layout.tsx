@@ -4,7 +4,7 @@ import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
 import * as Linking from "expo-linking";
 import { Stack, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Platform, StatusBar } from "react-native";
+import { Platform, StatusBar, Text, View } from "react-native";
 import NfcManager, { NfcEvents } from "react-native-nfc-manager";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -16,9 +16,10 @@ import {
 } from "../lib/nfc";
 import { theme } from "../lib/theme";
 
-const convex = new ConvexReactClient(
-  process.env.EXPO_PUBLIC_CONVEX_URL ?? "https://placeholder.convex.cloud",
-);
+const CONVEX_URL =
+  process.env.EXPO_PUBLIC_CONVEX_URL ?? "https://placeholder.convex.cloud";
+
+const convex = new ConvexReactClient(CONVEX_URL);
 
 /** Route name → header title. Dynamic routes use [id] pattern. */
 const ROUTE_TITLES: Record<string, string> = {
@@ -155,7 +156,55 @@ function NfcLaunchHandler() {
   return null;
 }
 
+function ConfigErrorScreen() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 24,
+        backgroundColor: theme.background,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "600",
+          color: theme.text,
+          marginBottom: 12,
+          textAlign: "center",
+        }}
+      >
+        Convex URL not configured
+      </Text>
+      <Text
+        style={{
+          fontSize: 14,
+          color: theme.textMuted,
+          textAlign: "center",
+          lineHeight: 22,
+        }}
+      >
+        This build was created without EXPO_PUBLIC_CONVEX_URL. Run this from
+        apps/expo, then rebuild:{"\n\n"}
+        eas env:create --name EXPO_PUBLIC_CONVEX_URL --value
+        "https://YOUR_DEPLOYMENT.convex.cloud" --environment preview --visibility plaintext
+      </Text>
+    </View>
+  );
+}
+
 export default function RootLayout() {
+  if (CONVEX_URL.includes("placeholder")) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar barStyle="light-content" backgroundColor={theme.background} />
+        <ConfigErrorScreen />
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <ConvexAuthProvider client={convex} storage={convexAuthStorage}>
       <SafeAreaProvider>

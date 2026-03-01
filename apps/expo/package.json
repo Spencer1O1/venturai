@@ -7,6 +7,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "build:android": "eas build --profile preview --platform android --local",
+    "build:apk": "eas build --profile preview --platform android",
     "build:ios": "eas build --profile preview --platform ios --local",
     "clean": "git clean -xdf .expo .cache .turbo node_modules",
     "dev": "expo start",
@@ -43,7 +44,8 @@
     "@types/react-dom": "~19.1.10",
     "@venturai/typescript": "workspace:*",
     "sharp": "^0.34.5",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "@react-native-community/cli": "latest"
   },
   "main": "expo-router/entry"
 }
