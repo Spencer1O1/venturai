@@ -188,14 +188,16 @@ export default function AssetDetailPage() {
         ) : (
           <ul className="space-y-3">
             {openItems.map((item) => (
-              <li
-                key={item._id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card-border bg-card p-4"
-              >
-                <span className="font-medium text-foreground">
-                  {item.title}
-                </span>
-                <RiskHeatmapPill riskScore={item.riskValue} />
+              <li key={item._id}>
+                <Link
+                  href={`/work-items/${item._id}`}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-card-border bg-card p-4 transition-colors hover:border-primary/50 hover:bg-card-border/10"
+                >
+                  <span className="font-medium text-foreground">
+                    {item.title}
+                  </span>
+                  <RiskHeatmapPill riskScore={item.riskValue} />
+                </Link>
               </li>
             ))}
           </ul>

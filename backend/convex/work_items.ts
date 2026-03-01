@@ -22,6 +22,17 @@ const workItemDocValidator = v.object({
 });
 
 /**
+ * Get a single work item by ID.
+ */
+export const getById = query({
+  args: { workItemId: v.id("workItems") },
+  returns: v.union(workItemDocValidator, v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.workItemId);
+  },
+});
+
+/**
  * List open work items for an asset.
  */
 export const listOpenByAsset = query({

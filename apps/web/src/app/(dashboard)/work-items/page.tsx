@@ -64,19 +64,15 @@ export default function WorkItemsPage() {
           </div>
         ) : (
           items.map((item) => (
-            <div
+            <Link
               key={item._id}
-              className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-card-border bg-card p-5 transition-colors hover:border-card-border"
+              href={`/work-items/${item._id}`}
+              className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-card-border bg-card p-5 transition-colors hover:border-primary/50 hover:bg-card-border/10"
             >
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-foreground">{item.title}</p>
                 <p className="mt-1 text-sm text-foreground/60">
-                  <Link
-                    href={`/assets/${item.assetId}`}
-                    className="text-primary hover:underline"
-                  >
-                    {assetNameById.get(item.assetId) ?? "Unknown asset"}
-                  </Link>
+                  {assetNameById.get(item.assetId) ?? "Unknown asset"}
                   {" · "}
                   {new Date(item.firstSeenAt).toLocaleDateString()}
                 </p>
@@ -87,7 +83,7 @@ export default function WorkItemsPage() {
                   Open
                 </span>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>
