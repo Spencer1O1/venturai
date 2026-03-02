@@ -308,16 +308,6 @@ function AssetPublicView({
       <Text style={styles.subtitle}>What would you like to do?</Text>
 
       <Pressable
-        style={[styles.button, styles.buttonSecondary]}
-        onPress={() => router.push("/sign-in" as never)}
-      >
-        <Text style={styles.buttonTitleSecondary}>Sign in for more</Text>
-        <Text style={styles.buttonHintSecondary}>
-          View full history, inspect, and report problems
-        </Text>
-      </Pressable>
-
-      <Pressable
         style={styles.button}
         onPress={() => router.push(`/inspection/${asset._id}` as never)}
       >

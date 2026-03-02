@@ -8,8 +8,14 @@ const path = require("path");
 const { withDangerousMod } = require("@expo/config-plugins");
 
 const AGP_UNIFY_BLOCK = `
-// Force AGP 8.11.0 for all subprojects to fix "No variants exist" variant matching
+// Force AGP 8.11.0 for all subprojects to fix "No variants exist" variant matching.
+// Subprojects like react-native-nfc-manager only declare mavenCentral() in buildscript;
+// add google() so com.android.tools.build:gradle:8.11.0 can be resolved.
 subprojects { subproject ->
+  subproject.buildscript.repositories {
+    google()
+    mavenCentral()
+  }
   subproject.buildscript.configurations.configureEach {
     resolutionStrategy.eachDependency { details ->
       if (details.requested.group == "com.android.tools.build" && details.requested.name == "gradle") {

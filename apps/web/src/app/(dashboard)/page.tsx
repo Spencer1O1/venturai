@@ -82,7 +82,7 @@ export default function DashboardPage() {
   const criticalCount = riskDistribution.critical ?? 0;
 
   const pieSegments = [
-    { label: "No Issues", value: noIssuesCount, color: "#6E7681", pct: totalAssets ? (noIssuesCount / totalAssets) * 100 : 93 },
+    { label: "No Issues", value: noIssuesCount, color: "#00D68F", pct: totalAssets ? (noIssuesCount / totalAssets) * 100 : 93 },
     { label: "Medium", value: mediumCount, color: "#FBBF24", pct: totalAssets ? (mediumCount / totalAssets) * 100 : 0 },
     { label: "High Risk", value: highCount + criticalCount, color: "#F87171", pct: totalAssets ? ((highCount + criticalCount) / totalAssets) * 100 : 0 },
   ].filter((s) => s.value > 0);
