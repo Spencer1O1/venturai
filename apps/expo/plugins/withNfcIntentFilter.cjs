@@ -22,13 +22,9 @@ function withNfcIntentFilter(config) {
 
     const ensureNdefFilter = ({ scheme, host, pathPrefix }) => {
       const existing = filters.find((f) => {
-        const hasAction =
-          f.action &&
-          f.action.some(
-            (a) =>
-              a.$?.["android:name"] ===
-              "android.nfc.action.NDEF_DISCOVERED",
-          );
+        const hasAction = f.action?.some(
+          (a) => a.$?.["android:name"] === "android.nfc.action.NDEF_DISCOVERED",
+        );
         if (!hasAction) return false;
 
         const data = f.data || [];
@@ -82,4 +78,3 @@ function withNfcIntentFilter(config) {
 }
 
 module.exports = withNfcIntentFilter;
-

@@ -38,11 +38,19 @@ eas env:create --name EXPO_PUBLIC_CONVEX_URL --value "https://YOUR_DEPLOYMENT.co
 
 Replace `YOUR_DEPLOYMENT` with your actual Convex deployment name. Use `plaintext` visibility since this URL is bundled into the app (not sensitive).
 
-### 3. Rebuild the APK
+### 3. Build with EAS
+
+From the repo root, you can use the helper script:
 
 ```bash
-pnpm build:apk
-# or: eas build --profile preview --platform android
+pnpm build:android
+```
+
+Or run EAS directly from the Expo app directory:
+
+```bash
+cd apps/expo
+eas build --profile preview --platform android
 ```
 
 ## Debug vs Release APK
@@ -54,40 +62,28 @@ pnpm build:apk
 
 These are already configured; keep them when modifying the project:
 
-- **`withAgpUnify` plugin** (`plugins/withAgpUnify.cjs`): Forces all native modules (gesture-handler, screens, safe-area-context, nfc-manager) to use AGP 8.11.0, matching the root project. Required because those modules pin older AGP versions, which causes "No variants exist" during Gradle resolution. Do not remove this plugin.
+- **Expo SDK 55**: The Expo app in `apps/expo` is on Expo SDK 55 with the matching `react` / `react-native` versions. Do not downgrade individual packages by hand; use `npx expo install --check --fix` if you need to realign versions.
 
-- **`experiments.autolinkingModuleResolution`** in `app.config.js`: Aligns Metro with autolinking for monorepos. Required with `nodeLinker: hoisted` in `pnpm-workspace.yaml`.
+- **`experiments.autolinkingModuleResolution`** in `app.config.js`: Aligns Metro with autolinking for monorepos. This is the default for SDK 55 and should stay enabled.
 
-- **`withAutolinkingProjectRoot`** (`plugins/withAutolinkingProjectRoot.cjs`): Sets `expoAutolinking.projectRoot` in Android `settings.gradle` to the monorepo root so native modules are resolved from the repo-level `node_modules`. Required for EAS and local builds in this monorepo. Do not remove.
+- **`withNfcIntentFilter` plugin** (`plugins/withNfcIntentFilter.cjs`): Ensures the Android manifest contains NFC `NDEF_DISCOVERED` intent filters for `venturai://a/...` and `https://venturai.app/a/...` so scanning a tag launches the app and routes into the correct screen. Keep this plugin so NFC tags continue to deep-link into the app.
 
 ## Troubleshooting
 
-### "No matching variant" / "No variants exist" for native modules
+- **EAS build fails**:
+  - Make sure you are on the latest EAS CLI version specified in `apps/expo/eas.json`.
+  - From `apps/expo`, retry with:
+    ```bash
+    eas build --profile preview --platform android --clear-cache
+    ```
+  - If errors mention mismatched package versions, run:
+    ```bash
+    cd apps/expo
+    npx expo install --check --fix
+    ```
+    then re-run `pnpm install` from the repo root.
 
-If the build fails with:
-
-```
-Could not resolve project :react-native-gesture-handler.
-> No matching variant of project :react-native-gesture-handler was found...
-  - No variants exist.
-```
-
-The project already uses the `withAgpUnify` plugin to fix this. If it recurs:
-
-1. **Clear the EAS build cache**:
-   ```bash
-   cd apps/expo
-   eas build --profile preview --platform android --clear-cache
-   ```
-
-2. **Verify the plugin is active**: Ensure `withAgpUnify` is in `app.config.js` plugins and that `android/build.gradle` (after prebuild) contains the "Force AGP 8.11.0 for all subprojects" block.
-
-3. **Check for duplicate native modules**: Run `pnpm why react-native-safe-area-context` (and similar) from the repo root. Deduplicate any duplicates.
-
-4. **Try a local build** to isolate cloud vs. environment:
-   ```bash
-   cd apps/expo
-   eas build --profile preview --platform android --local
-   ```
-
-5. If the issue persists, it may be an EAS/Expo infrastructure change (e.g. [expo/expo#42729](https://github.com/expo/expo/issues/42729)). Check [Expo Discord](https://chat.expo.dev) and [expo/expo issues](https://github.com/expo/expo/issues) for updates.
+- **NFC tag does not open the app**:
+  - Confirm `withNfcIntentFilter` is present in `app.config.js` `plugins`.
+  - Run `pnpm expo:prebuild` to re-apply manifest changes.
+  - On the device, clear any “Open by default” settings for third-party NFC apps so Android will offer your app for `venturai://` tags.
