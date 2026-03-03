@@ -16,6 +16,8 @@
     "expo:prebuild": "pnpm --filter @venturai/expo prebuild",
     "dev:android": "pnpm --filter @venturai/expo android",
     "dev:ios": "pnpm --filter @venturai/expo ios",
+    "build:android": "pnpm --filter @venturai/expo build:android",
+    "build:ios": "pnpm --filter @venturai/expo build:ios",
 
     "lint": "turbo run lint",
     "format": "turbo run format",

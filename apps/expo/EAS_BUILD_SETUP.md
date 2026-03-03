@@ -1,5 +1,12 @@
 # EAS Build Setup for Venturai
 
+## Monorepo (required for EAS)
+
+- **Run all EAS commands from `apps/expo`**: e.g. `cd apps/expo` then `eas build ...`. Do not run `eas build` from the repo root.
+- **Git at repo root**: The repository must have a single `.git` at the monorepo root (e.g. `venturai/.git`). If `.git` were inside `apps/expo`, EAS would not find `pnpm-lock.yaml` and would fail. Keep the repo as one git root.
+- **`eas.json`** lives only in `apps/expo`. The root `eas.json` has been removed to match [Expo’s monorepo guidance](https://docs.expo.dev/build-reference/build-with-monorepos/).
+- **`.easignore`** at the repo root controls what is excluded from the EAS upload. Do not exclude `pnpm-lock.yaml` or `pnpm-workspace.yaml`.
+
 ## Convex URL (Required)
 
 The app needs your Convex deployment URL at build time. Without it, the release APK will show a config error and sign-in will hang.
@@ -50,6 +57,8 @@ These are already configured; keep them when modifying the project:
 - **`withAgpUnify` plugin** (`plugins/withAgpUnify.cjs`): Forces all native modules (gesture-handler, screens, safe-area-context, nfc-manager) to use AGP 8.11.0, matching the root project. Required because those modules pin older AGP versions, which causes "No variants exist" during Gradle resolution. Do not remove this plugin.
 
 - **`experiments.autolinkingModuleResolution`** in `app.config.js`: Aligns Metro with autolinking for monorepos. Required with `nodeLinker: hoisted` in `pnpm-workspace.yaml`.
+
+- **`withAutolinkingProjectRoot`** (`plugins/withAutolinkingProjectRoot.cjs`): Sets `expoAutolinking.projectRoot` in Android `settings.gradle` to the monorepo root so native modules are resolved from the repo-level `node_modules`. Required for EAS and local builds in this monorepo. Do not remove.
 
 ## Troubleshooting
 

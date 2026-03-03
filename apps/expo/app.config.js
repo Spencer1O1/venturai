@@ -13,6 +13,8 @@ const faviconPath = path.join(assetsDir, "favicon.png");
 const withSplashLogoDrawable = require("./plugins/withSplashLogoDrawable.cjs");
 const withNfcIntentFilter = require("./plugins/withNfcIntentFilter.cjs");
 const withAgpUnify = require("./plugins/withAgpUnify.cjs");
+const withAutolinkingProjectRoot = require("./plugins/withAutolinkingProjectRoot.cjs");
+const withCoreSplashscreenDependency = require("./plugins/withCoreSplashscreenDependency.cjs");
 
 /** @type {import('expo/config').ExpoConfig} */
 const config = {
@@ -55,6 +57,8 @@ const config = {
     [withSplashLogoDrawable, { iconPath: splashIconPath }],
     withNfcIntentFilter,
     withAgpUnify,
+    withCoreSplashscreenDependency,
+    withAutolinkingProjectRoot,
   ],
   web: { favicon: faviconPath },
   experiments: {

@@ -1,0 +1,36 @@
+# Ignore local dependencies and package manager cache (reinstalled on EAS)
+node_modules
+.pnpm-store
+npm-debug.log*
+yarn-error.log*
+
+# Git / IDE / OS noise
+.git
+.gitignore
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+
+# Expo local state
+.expo
+.expo-shared
+
+# Build outputs and caches
+**/dist
+**/build
+**/.cache
+**/.turbo
+**/coverage
+**/storybook-static
+**/.next
+**/out
+
+# iOS / Android local build artifacts (Gradle/Xcode recreate these)
+**/android/.gradle
+**/android/.cxx
+**/android/local.properties
+**/android/**/build
+**/ios/Pods
+**/ios/build
+

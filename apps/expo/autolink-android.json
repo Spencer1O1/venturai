@@ -1,0 +1,206 @@
+{
+  "extraDependencies": [],
+  "coreFeatures": [],
+  "modules": [
+    {
+      "packageName": "expo",
+      "projects": [
+        {
+          "name": "expo",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo\\android",
+          "modules": ["expo.modules.fetch.ExpoFetchModule"]
+        }
+      ],
+      "packageVersion": "54.0.33"
+    },
+    {
+      "packageName": "expo-asset",
+      "projects": [
+        {
+          "name": "expo-asset",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-asset\\android",
+          "modules": ["expo.modules.asset.AssetModule"],
+          "publication": {
+            "groupId": "expo.modules.asset",
+            "artifactId": "expo.modules.asset",
+            "version": "12.0.12",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "12.0.12"
+    },
+    {
+      "packageName": "expo-constants",
+      "projects": [
+        {
+          "name": "expo-constants",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-constants\\android",
+          "modules": ["expo.modules.constants.ConstantsModule"]
+        }
+      ],
+      "packageVersion": "18.0.13"
+    },
+    {
+      "packageName": "expo-file-system",
+      "projects": [
+        {
+          "name": "expo-file-system",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-file-system\\android",
+          "modules": [
+            "expo.modules.filesystem.FileSystemModule",
+            "expo.modules.filesystem.legacy.FileSystemLegacyModule"
+          ],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.filesystem",
+            "version": "19.0.21",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "19.0.21"
+    },
+    {
+      "packageName": "expo-font",
+      "projects": [
+        {
+          "name": "expo-font",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-font\\android",
+          "modules": [
+            "expo.modules.font.FontLoaderModule",
+            "expo.modules.font.FontUtilsModule"
+          ],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.font",
+            "version": "14.0.11",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "14.0.11"
+    },
+    {
+      "packageName": "expo-image-loader",
+      "projects": [
+        {
+          "name": "expo-image-loader",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-image-loader\\android",
+          "modules": [],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.imageloader",
+            "version": "6.0.0",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "6.0.0"
+    },
+    {
+      "packageName": "expo-image-picker",
+      "projects": [
+        {
+          "name": "expo-image-picker",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-image-picker\\android",
+          "modules": ["expo.modules.imagepicker.ImagePickerModule"],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.imagepicker",
+            "version": "17.0.10",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "17.0.10"
+    },
+    {
+      "packageName": "expo-keep-awake",
+      "projects": [
+        {
+          "name": "expo-keep-awake",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-keep-awake\\android",
+          "modules": ["expo.modules.keepawake.KeepAwakeModule"],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.keepawake",
+            "version": "15.0.8",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "15.0.8"
+    },
+    {
+      "packageName": "expo-linking",
+      "projects": [
+        {
+          "name": "expo-linking",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-linking\\android",
+          "modules": ["expo.modules.linking.ExpoLinkingModule"],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.linking",
+            "version": "8.0.11",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "8.0.11"
+    },
+    {
+      "packageName": "expo-modules-core",
+      "projects": [
+        {
+          "name": "expo-modules-core",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-modules-core\\android",
+          "modules": []
+        }
+      ],
+      "plugins": [
+        {
+          "id": "expo-module-gradle-plugin",
+          "group": "expo.modules",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-modules-core\\expo-module-gradle-plugin",
+          "applyToRootProject": false
+        }
+      ],
+      "packageVersion": "3.0.29"
+    },
+    {
+      "packageName": "expo-secure-store",
+      "projects": [
+        {
+          "name": "expo-secure-store",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-secure-store\\android",
+          "modules": ["expo.modules.securestore.SecureStoreModule"],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.securestore",
+            "version": "15.0.8",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "15.0.8"
+    },
+    {
+      "packageName": "expo-splash-screen",
+      "projects": [
+        {
+          "name": "expo-splash-screen",
+          "sourceDir": "C:\\Dev\\venturai\\node_modules\\expo-splash-screen\\android",
+          "modules": ["expo.modules.splashscreen.SplashScreenModule"],
+          "publication": {
+            "groupId": "host.exp.exponent",
+            "artifactId": "expo.modules.splashscreen",
+            "version": "31.0.13",
+            "repository": "local-maven-repo"
+          }
+        }
+      ],
+      "packageVersion": "31.0.13"
+    }
+  ]
+}
