@@ -1,5 +1,8 @@
 # Venturai
 
+Made in ~19 hours at the HackUSU hackathon, 02/27-28/2026  
+[@Spencer1O1](https://github.com/Spencer1O1) · [@bell-kevin](https://github.com/bell-kevin) · [@StevenChristensen444](https://github.com/StevenChristensen444) · [@dillanhart](https://github.com/dillanhart)
+
 ## Project Abstract
 
 Venturai is a cross-platform asset assessment and maintenance coordination system that helps teams capture equipment condition in the field, route findings into actionable work items, and monitor operational risk in a shared dashboard. The platform combines guided inspections, role-based workflows, and AI-assisted analysis so inspectors, operators, and maintainers can move from reported issues to tracked remediation with a consistent audit trail.
