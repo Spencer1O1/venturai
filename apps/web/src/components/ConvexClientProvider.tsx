@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 const url = process.env.NEXT_PUBLIC_CONVEX_URL;
 if (!url) {
   throw new Error(
-    "NEXT_PUBLIC_CONVEX_URL is required. Copy .env.example to .env.local and set CONVEX_URL.",
+    "NEXT_PUBLIC_CONVEX_URL is required. Copy .env.example to .env.local and set NEXT_PUBLIC_CONVEX_URL (same as CONVEX_URL).",
   );
 }
 

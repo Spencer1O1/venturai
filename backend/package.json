@@ -22,6 +22,7 @@
     "deploy": "convex deploy",
     "codegen": "convex codegen",
     "generateAuthKeys": "node scripts/generateKeys.mjs",
+    "seed:idea-factory": "node scripts/seedIdeaFactory.mjs",
     "format": "biome check . --linter-enabled=false --fix",
     "lint": "biome lint . --write",
     "typecheck": "tsc --noEmit",

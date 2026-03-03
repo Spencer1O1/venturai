@@ -3,8 +3,8 @@
  * Fixes "No variants exist" when native modules (gesture-handler, screens, etc.)
  * pin older AGP versions that don't match the root project.
  */
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const { withDangerousMod } = require("@expo/config-plugins");
 
 const AGP_UNIFY_BLOCK = `
@@ -42,7 +42,7 @@ function withAgpUnify(config) {
         return config;
       }
 
-      const insertPoint = content.indexOf("apply plugin: \"expo-root-project\"");
+      const insertPoint = content.indexOf('apply plugin: "expo-root-project"');
       if (insertPoint === -1) {
         return config;
       }

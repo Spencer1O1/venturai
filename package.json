@@ -23,7 +23,7 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "clean": "git clean -xdf node_modules .turbo dist .expo .next .cache",
-    "rename": "node scripts/rename-template.js"
+    "seed:idea-factory": "pnpm --filter @venturai/backend seed:idea-factory"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.0",

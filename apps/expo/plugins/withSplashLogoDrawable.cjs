@@ -3,8 +3,8 @@
  * Required when expo-splash-screen has no image (avoids Jimp bug) but Android
  * styles still reference @drawable/splashscreen_logo.
  */
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const { withDangerousMod } = require("@expo/config-plugins");
 
 function withSplashLogoDrawable(config, { iconPath }) {

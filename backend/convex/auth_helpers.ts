@@ -4,6 +4,22 @@ import { v } from "convex/values";
 import { query } from "./_generated/server";
 
 /**
+ * Return userId for the given email, or null if not found.
+ * Used by seed to resolve idea@mail.com after signUp.
+ */
+export const getUserIdByEmail = query({
+  args: { email: v.string() },
+  returns: v.union(v.id("users"), v.null()),
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .unique();
+    return user?._id ?? null;
+  },
+});
+
+/**
  * Get current user (if authenticated).
  * Role is per-org/per-group; use getUserRoleForAsset or isUserAdminOfOrg for context-specific checks.
  */
