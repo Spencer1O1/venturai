@@ -1,6 +1,5 @@
 const path = require("node:path");
 
-// Use absolute paths so prebuild resolves images correctly (fixes monorepo path issues)
 const projectRoot = __dirname;
 const assetsDir = path.join(projectRoot, "assets/images/expo-icons");
 const iconPath = path.join(assetsDir, "icon.png");
@@ -8,13 +7,7 @@ const adaptiveIconPath = path.join(assetsDir, "adaptive-icon.png");
 const splashIconPath = path.join(assetsDir, "splash-icon.png");
 // const splashImagePath = path.join(assetsDir, "splash.png");
 const faviconPath = path.join(assetsDir, "favicon.png");
-
-// Plugin: copy icon to splashscreen_logo (required when splash image disabled)
-const withSplashLogoDrawable = require("./plugins/withSplashLogoDrawable.cjs");
 const withNfcIntentFilter = require("./plugins/withNfcIntentFilter.cjs");
-const withAgpUnify = require("./plugins/withAgpUnify.cjs");
-const withAutolinkingProjectRoot = require("./plugins/withAutolinkingProjectRoot.cjs");
-const withCoreSplashscreenDependency = require("./plugins/withCoreSplashscreenDependency.cjs");
 
 /** @type {import('expo/config').ExpoConfig} */
 const config = {
@@ -37,6 +30,8 @@ const config = {
   },
   plugins: [
     "expo-router",
+    "expo-secure-store",
+    "expo-build-properties",
     [
       "react-native-nfc-manager",
       { nfcPermission: "Venturai uses NFC to register and read asset tags" },
@@ -54,11 +49,7 @@ const config = {
         resizeMode: "contain",
       },
     ],
-    [withSplashLogoDrawable, { iconPath: splashIconPath }],
     withNfcIntentFilter,
-    withAgpUnify,
-    withCoreSplashscreenDependency,
-    withAutolinkingProjectRoot,
   ],
   web: { favicon: faviconPath },
   experiments: {
